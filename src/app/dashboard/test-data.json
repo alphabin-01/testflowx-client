@@ -1,0 +1,338 @@
+[
+  {
+    "id": 1,
+    "name": "Authentication Tests",
+    "description": "Tests for user authentication flow",
+    "status": "passed",
+    "executionTime": 1.25,
+    "timestamp": "2024-06-30T14:30:00Z",
+    "environment": "staging",
+    "category": "integration",
+    "errorMessage": null,
+    "stackTrace": null,
+    "testCases": [
+      {
+        "id": 101,
+        "name": "User login with valid credentials",
+        "status": "passed",
+        "executionTime": 0.42,
+        "errorMessage": null
+      },
+      {
+        "id": 102,
+        "name": "User login with invalid credentials",
+        "status": "passed",
+        "executionTime": 0.38,
+        "errorMessage": null
+      },
+      {
+        "id": 103,
+        "name": "Password reset flow",
+        "status": "passed",
+        "executionTime": 0.45,
+        "errorMessage": null
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "User Profile Tests",
+    "description": "Tests for user profile management",
+    "status": "failed",
+    "executionTime": 3.78,
+    "timestamp": "2024-06-30T14:35:00Z",
+    "environment": "staging",
+    "category": "integration",
+    "errorMessage": "Test failed due to unexpected response from API",
+    "stackTrace": "Error: Expected 200 but got 500\n  at UserProfileTests.testUpdateProfile (line 42)\n  at TestRunner.runTest (line 123)",
+    "testCases": [
+      {
+        "id": 201,
+        "name": "View user profile",
+        "status": "passed",
+        "executionTime": 0.33,
+        "errorMessage": null
+      },
+      {
+        "id": 202,
+        "name": "Update user profile",
+        "status": "failed",
+        "executionTime": 1.57,
+        "errorMessage": "Expected 200 but got 500"
+      },
+      {
+        "id": 203,
+        "name": "Change profile picture",
+        "status": "passed",
+        "executionTime": 1.88,
+        "errorMessage": null
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Search Functionality",
+    "description": "Tests for search feature",
+    "status": "passed",
+    "executionTime": 2.34,
+    "timestamp": "2024-06-30T14:40:00Z",
+    "environment": "production",
+    "category": "ui",
+    "errorMessage": null,
+    "stackTrace": null,
+    "testCases": [
+      {
+        "id": 301,
+        "name": "Search with valid query",
+        "status": "passed",
+        "executionTime": 0.76,
+        "errorMessage": null
+      },
+      {
+        "id": 302,
+        "name": "Search with empty query",
+        "status": "passed",
+        "executionTime": 0.55,
+        "errorMessage": null
+      },
+      {
+        "id": 303,
+        "name": "Search results pagination",
+        "status": "passed",
+        "executionTime": 1.03,
+        "errorMessage": null
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Payment Processing",
+    "description": "Tests for payment processing functions",
+    "status": "failed",
+    "executionTime": 5.67,
+    "timestamp": "2024-06-30T14:45:00Z",
+    "environment": "staging",
+    "category": "integration",
+    "errorMessage": "Timeout while connecting to payment gateway",
+    "stackTrace": "Error: Connection timeout after 5000ms\n  at PaymentTests.testProcessPayment (line 78)\n  at TestRunner.runTest (line 123)",
+    "testCases": [
+      {
+        "id": 401,
+        "name": "Process credit card payment",
+        "status": "failed",
+        "executionTime": 5.67,
+        "errorMessage": "Connection timeout after 5000ms"
+      },
+      {
+        "id": 402,
+        "name": "Process PayPal payment",
+        "status": "skipped",
+        "executionTime": 0,
+        "errorMessage": "Skipped due to previous test failure"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Cart Management",
+    "description": "Tests for shopping cart functionality",
+    "status": "passed",
+    "executionTime": 1.89,
+    "timestamp": "2024-06-30T14:50:00Z",
+    "environment": "production",
+    "category": "integration",
+    "errorMessage": null,
+    "stackTrace": null,
+    "testCases": [
+      {
+        "id": 501,
+        "name": "Add item to cart",
+        "status": "passed",
+        "executionTime": 0.55,
+        "errorMessage": null
+      },
+      {
+        "id": 502,
+        "name": "Remove item from cart",
+        "status": "passed",
+        "executionTime": 0.48,
+        "errorMessage": null
+      },
+      {
+        "id": 503,
+        "name": "Update item quantity",
+        "status": "passed",
+        "executionTime": 0.86,
+        "errorMessage": null
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Product Catalog",
+    "description": "Tests for product listing and filtering",
+    "status": "flaky",
+    "executionTime": 3.12,
+    "timestamp": "2024-06-30T14:55:00Z",
+    "environment": "development",
+    "category": "ui",
+    "errorMessage": "Intermittent failure in product filtering",
+    "stackTrace": "Error: Expected 12 items but got 10\n  at ProductTests.testFilterByCategory (line 106)\n  at TestRunner.runTest (line 123)",
+    "testCases": [
+      {
+        "id": 601,
+        "name": "List all products",
+        "status": "passed",
+        "executionTime": 0.96,
+        "errorMessage": null
+      },
+      {
+        "id": 602,
+        "name": "Filter products by category",
+        "status": "flaky",
+        "executionTime": 1.34,
+        "errorMessage": "Expected 12 items but got 10"
+      },
+      {
+        "id": 603,
+        "name": "Sort products by price",
+        "status": "passed",
+        "executionTime": 0.82,
+        "errorMessage": null
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "User Registration",
+    "description": "Tests for new user registration",
+    "status": "passed",
+    "executionTime": 2.11,
+    "timestamp": "2024-06-30T15:00:00Z",
+    "environment": "staging",
+    "category": "integration",
+    "errorMessage": null,
+    "stackTrace": null,
+    "testCases": [
+      {
+        "id": 701,
+        "name": "Register with valid information",
+        "status": "passed",
+        "executionTime": 0.87,
+        "errorMessage": null
+      },
+      {
+        "id": 702,
+        "name": "Register with existing email",
+        "status": "passed",
+        "executionTime": 0.75,
+        "errorMessage": null
+      },
+      {
+        "id": 703,
+        "name": "Register with invalid password",
+        "status": "passed",
+        "executionTime": 0.49,
+        "errorMessage": null
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Order Processing",
+    "description": "Tests for order creation and processing",
+    "status": "skipped",
+    "executionTime": 0,
+    "timestamp": "2024-06-30T15:05:00Z",
+    "environment": "staging",
+    "category": "integration",
+    "errorMessage": "Skipped due to database maintenance",
+    "stackTrace": null,
+    "testCases": [
+      {
+        "id": 801,
+        "name": "Create new order",
+        "status": "skipped",
+        "executionTime": 0,
+        "errorMessage": "Skipped due to database maintenance"
+      },
+      {
+        "id": 802,
+        "name": "Process order payment",
+        "status": "skipped",
+        "executionTime": 0,
+        "errorMessage": "Skipped due to database maintenance"
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "API Endpoints",
+    "description": "Tests for REST API endpoints",
+    "status": "failed",
+    "executionTime": 4.32,
+    "timestamp": "2024-06-30T15:10:00Z",
+    "environment": "development",
+    "category": "api",
+    "errorMessage": "Validation error in response data",
+    "stackTrace": "Error: Schema validation failed\n  at APITests.testGetUserData (line 58)\n  at TestRunner.runTest (line 123)",
+    "testCases": [
+      {
+        "id": 901,
+        "name": "GET /users endpoint",
+        "status": "failed",
+        "executionTime": 0.95,
+        "errorMessage": "Schema validation failed"
+      },
+      {
+        "id": 902,
+        "name": "POST /users endpoint",
+        "status": "passed",
+        "executionTime": 1.25,
+        "errorMessage": null
+      },
+      {
+        "id": 903,
+        "name": "DELETE /users endpoint",
+        "status": "passed",
+        "executionTime": 2.12,
+        "errorMessage": null
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Performance Tests",
+    "description": "Load and performance testing",
+    "status": "passed",
+    "executionTime": 8.76,
+    "timestamp": "2024-06-30T15:15:00Z",
+    "environment": "staging",
+    "category": "performance",
+    "errorMessage": null,
+    "stackTrace": null,
+    "testCases": [
+      {
+        "id": 1001,
+        "name": "Homepage load time",
+        "status": "passed",
+        "executionTime": 2.34,
+        "errorMessage": null
+      },
+      {
+        "id": 1002,
+        "name": "Search response time",
+        "status": "passed",
+        "executionTime": 2.87,
+        "errorMessage": null
+      },
+      {
+        "id": 1003,
+        "name": "Database query performance",
+        "status": "passed",
+        "executionTime": 3.55,
+        "errorMessage": null
+      }
+    ]
+  }
+] 
