@@ -1,0 +1,966 @@
+{
+	"info": {
+		"_postman_id": "086e5278-7d77-4b30-8ac8-db0c30fff306",
+		"name": "TestFlowX API",
+		"description": "API collection for TestFlowX - a metrics collection and visualization system for Playwright tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "36924227",
+		"_collection_link": "https://alphabin.postman.co/workspace/My-Workspace~5799c2de-4270-410a-81ea-4f6bc4496d28/collection/34726550-086e5278-7d77-4b30-8ac8-db0c30fff306?action=share&source=collection_link&creator=36924227"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}"
+						},
+						"url": "{{base_url}}/api/auth/register",
+						"description": "Register a new user account. Password must be at least 8 characters long."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": "{{base_url}}/api/auth/login",
+						"description": "Login with user credentials. Returns JWT token."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/auth/profile",
+						"description": "Get current user profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\"\n}"
+						},
+						"url": "{{base_url}}/api/auth/profile",
+						"description": "Update user profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"currentPassword\": \"oldpassword123\",\n    \"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": "{{base_url}}/api/auth/change-password",
+						"description": "Change user password. New password must be at least 8 characters long."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Create Project",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"My Test Project\",\n    \"description\": \"A project for E2E tests\",\n    \"settings\": {\n        \"retentionPeriod\": 30,\n        \"notificationsEnabled\": true\n    }\n}"
+						},
+						"url": "{{base_url}}/api/projects",
+						"description": "Create a new project. Project name must be between 3 and 50 characters."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects",
+						"description": "Get all projects for current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}",
+						"description": "Get a specific project by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Project",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Project Name\",\n    \"description\": \"Updated project description\",\n    \"settings\": {\n        \"retentionPeriod\": 60,\n        \"notificationsEnabled\": false\n    }\n}"
+						},
+						"url": "{{base_url}}/api/projects/{{project_id}}",
+						"description": "Update a project. Project name must be between 3 and 50 characters."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Project",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}",
+						"description": "Delete (deactivate) a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Project Member",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"member@example.com\",\n    \"role\": \"editor\"\n}"
+						},
+						"url": "{{base_url}}/api/projects/{{project_id}}/members",
+						"description": "Add a member to a project. Valid roles: viewer, editor, admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Project Member",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"admin\"\n}"
+						},
+						"url": "{{base_url}}/api/projects/{{project_id}}/members/{{user_id}}",
+						"description": "Update a project member's role. Valid roles: viewer, editor, admin"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Project Member",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}/members/{{user_id}}",
+						"description": "Remove a member from a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Test Runs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}/test-runs",
+						"description": "Get test runs for a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Test Run Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}/test-runs/stats",
+						"description": "Get test run statistics for a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Environments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}/environments",
+						"description": "Get environments for a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Branches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}/branches",
+						"description": "Get branches for a project"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "API Keys",
+			"item": [
+				{
+					"name": "Create API Key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Runner Key\",\n    \"projectId\": \"{{project_id}}\",\n    \"expiresIn\": 30,\n    \"permissions\": {\n        \"canRead\": true,\n        \"canWrite\": true,\n        \"canDelete\": false\n    }\n}"
+						},
+						"url": "{{base_url}}/api/api-keys",
+						"description": "Create a new API key"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All API Keys",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/api-keys",
+						"description": "Get all API keys for current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get API Key",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/api-keys/{{api_key_id}}",
+						"description": "Get a specific API key by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke API Key",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/api-keys/{{api_key_id}}/revoke",
+						"description": "Revoke an API key"
+					},
+					"response": []
+				},
+				{
+					"name": "Rotate API Key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/api-keys/{{api_key_id}}/rotate",
+						"description": "Rotate an API key (revoke old, create new)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Suites",
+			"item": [
+				{
+					"name": "Create Test Suite",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Authentication Tests\",\n    \"description\": \"Test suite for authentication flows\",\n    \"projectId\": \"{{project_id}}\",\n    \"config\": {\n        \"retries\": 2,\n        \"timeout\": 30000,\n        \"parallel\": true\n    }\n}"
+						},
+						"url": "{{base_url}}/api/test-suites",
+						"description": "Create a new test suite"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test Suite",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-suites/{{test_suite_id}}",
+						"description": "Get a test suite by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Test Suite",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Authentication Tests\",\n    \"description\": \"Updated test suite for auth flows\",\n    \"config\": {\n        \"retries\": 3,\n        \"timeout\": 60000,\n        \"parallel\": false\n    }\n}"
+						},
+						"url": "{{base_url}}/api/test-suites/{{test_suite_id}}",
+						"description": "Update a test suite"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Test Suite",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"completed\",\n    \"endTime\": \"2024-03-20T15:00:00.000Z\",\n    \"summary\": {\n        \"total\": 10,\n        \"passed\": 8,\n        \"failed\": 2,\n        \"skipped\": 0\n    }\n}"
+						},
+						"url": "{{base_url}}/api/test-suites/{{test_suite_id}}/complete",
+						"description": "Complete a test suite with results"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Test Suite",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-suites/{{test_suite_id}}",
+						"description": "Delete a test suite"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Cases",
+			"item": [
+				{
+					"name": "Create Test Case",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Login with valid credentials\",\n    \"fullTitle\": \"Authentication Tests > Login with valid credentials\",\n    \"testSuiteId\": \"{{test_suite_id}}\",\n    \"projectId\": \"{{project_id}}\",\n    \"file\": \"tests/auth/login.spec.js\",\n    \"line\": 10,\n    \"retries\": 2,\n    \"timeout\": 30000\n}"
+						},
+						"url": "{{base_url}}/api/test-cases",
+						"description": "Create a new test case"
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Create Test Cases",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    {\n        \"title\": \"Login with valid credentials\",\n        \"fullTitle\": \"Authentication Tests > Login with valid credentials\",\n        \"testSuiteId\": \"{{test_suite_id}}\",\n        \"projectId\": \"{{project_id}}\",\n        \"file\": \"tests/auth/login.spec.js\",\n        \"line\": 10,\n        \"retries\": 2,\n        \"timeout\": 30000\n    },\n    {\n        \"title\": \"Login with invalid credentials\",\n        \"fullTitle\": \"Authentication Tests > Login with invalid credentials\",\n        \"testSuiteId\": \"{{test_suite_id}}\",\n        \"projectId\": \"{{project_id}}\",\n        \"file\": \"tests/auth/login.spec.js\",\n        \"line\": 25,\n        \"retries\": 2,\n        \"timeout\": 30000\n    }\n]"
+						},
+						"url": "{{base_url}}/api/test-cases/bulk",
+						"description": "Create multiple test cases in one request"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test Case",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-cases/{{test_case_id}}",
+						"description": "Get a test case by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Test Case",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated test case title\",\n    \"fullTitle\": \"Authentication Tests > Updated test case title\",\n    \"retries\": 3,\n    \"timeout\": 60000\n}"
+						},
+						"url": "{{base_url}}/api/test-cases/{{test_case_id}}",
+						"description": "Update a test case"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Test Case",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"passed\",\n    \"duration\": 1500,\n    \"startTime\": \"2024-03-20T14:59:58.500Z\",\n    \"endTime\": \"2024-03-20T15:00:00.000Z\",\n    \"error\": null,\n    \"retries\": 0,\n    \"attempt\": 1\n}"
+						},
+						"url": "{{base_url}}/api/test-cases/{{test_case_id}}/complete",
+						"description": "Complete a test case with result"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Test Case",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-cases/{{test_case_id}}",
+						"description": "Delete a test case"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Runs",
+			"item": [
+				{
+					"name": "Create Test Run",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"projectId\": \"{{project_id}}\",\n    \"runId\": \"run-123\",\n    \"branch\": \"main\",\n    \"commit\": \"abc123\",\n    \"environment\": \"staging\",\n    \"browser\": {\n        \"name\": \"chromium\",\n        \"version\": \"121.0.0\",\n        \"platform\": \"darwin\"\n    },\n    \"viewport\": {\n        \"width\": 1280,\n        \"height\": 720\n    },\n    \"baseUrl\": \"https://staging.example.com\"\n}"
+						},
+						"url": "{{base_url}}/api/test-runs",
+						"description": "Create a new test run"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test Run by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-runs/{{test_run_id}}",
+						"description": "Get a test run by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test Run by Run ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-runs/run/{{run_id}}",
+						"description": "Get a test run by runId"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Test Run",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"branch\": \"feature/auth\",\n    \"commit\": \"def456\",\n    \"environment\": \"staging\",\n    \"browser\": {\n        \"name\": \"firefox\",\n        \"version\": \"122.0.0\",\n        \"platform\": \"darwin\"\n    },\n    \"viewport\": {\n        \"width\": 1920,\n        \"height\": 1080\n    },\n    \"baseUrl\": \"https://staging.example.com\"\n}"
+						},
+						"url": "{{base_url}}/api/test-runs/{{test_run_id}}",
+						"description": "Update a test run"
+					},
+					"response": []
+				},
+				{
+					"name": "Complete Test Run",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"completed\",\n    \"endTime\": \"2024-03-20T15:30:00.000Z\",\n    \"summary\": {\n        \"total\": 50,\n        \"passed\": 45,\n        \"failed\": 3,\n        \"skipped\": 2,\n        \"duration\": 180000\n    }\n}"
+						},
+						"url": "{{base_url}}/api/test-runs/{{test_run_id}}/complete",
+						"description": "Complete a test run with results"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Test Run",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-runs/{{test_run_id}}",
+						"description": "Delete a test run"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Results",
+			"item": [
+				{
+					"name": "Submit Test Result",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"testRunId\": \"{{test_run_id}}\",\n    \"testCaseId\": \"{{test_case_id}}\",\n    \"status\": \"passed\",\n    \"duration\": 1500,\n    \"startTime\": \"2024-03-20T14:30:00Z\",\n    \"endTime\": \"2024-03-20T14:30:01.5Z\",\n    \"metadata\": {\n        \"browser\": \"chromium\",\n        \"viewport\": \"1920x1080\",\n        \"platform\": \"macOS\"\n    },\n    \"artifacts\": {\n        \"screenshot\": \"https://storage.example.com/screenshots/test123.png\",\n        \"video\": \"https://storage.example.com/videos/test123.mp4\",\n        \"trace\": \"https://storage.example.com/traces/test123.zip\"\n    }\n}"
+						},
+						"url": "{{base_url}}/api/test-results",
+						"description": "Submit a test result"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test Results",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-runs/{{test_run_id}}/results",
+						"description": "Get all test results for a test run"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Test Result by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/test-results/{{test_result_id}}",
+						"description": "Get a specific test result by ID"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Test Metrics",
+			"item": [
+				{
+					"name": "Get Metrics by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/metrics/{{metrics_id}}",
+						"description": "Get metrics by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Metrics",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/metrics/{{metrics_id}}/refresh",
+						"description": "Refresh metrics"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Metrics",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": "{{base_url}}/api/metrics/{{metrics_id}}",
+						"description": "Delete metrics"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Test Run Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}/test-runs/stats",
+						"description": "Get test run statistics for a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Test Suite Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": "{{base_url}}/api/projects/{{project_id}}/test-suites/stats",
+						"description": "Get test suite statistics for a project"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "project_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "api_key_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "test_suite_id",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "test_run_id",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "run_id",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "test_case_id",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "metrics_id",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
