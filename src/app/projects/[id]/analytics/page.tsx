@@ -1,27 +1,24 @@
 'use client';
 
-import { AnalyticsContent } from "@/components/dashboard/content/analytics";
-import DashboardLayout from "../../../dashboard-layout";
 import { ApiKeyCheck } from "@/components/api-keys/api-key-check";
+import { AnalyticsContent } from "@/components/dashboard/content/analytics";
 import { useParams } from "next/navigation";
 
 export default function AnalyticsPage() {
     const { id } = useParams();
 
     return (
-        <DashboardLayout>
-            <ApiKeyCheck projectId={id as string}>
-                <div className="flex flex-col gap-8 p-8">
-                    <div className="flex flex-col space-y-1.5">
-                        <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
-                        <p className="text-muted-foreground">
-                            Visualize your test metrics and performance
-                        </p>
-                    </div>
-
-                    <AnalyticsContent />
+        <ApiKeyCheck projectId={id as string}>
+            <div className="flex flex-col gap-8 p-8">
+                <div className="flex flex-col space-y-1.5">
+                    <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
+                    <p className="text-muted-foreground">
+                        Visualize your test metrics and performance
+                    </p>
                 </div>
-            </ApiKeyCheck>
-        </DashboardLayout>
+
+                <AnalyticsContent />
+            </div>
+        </ApiKeyCheck>
     );
 } 

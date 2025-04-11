@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from 'react';
 import { API_ENDPOINTS } from '@/lib/api';
 import { apiRequest, STATUS } from '@/lib/api-client';
 
@@ -42,6 +42,7 @@ interface ProjectContextType {
     error: string | null;
     fetchProject: (id: string) => Promise<void>;
     clearProject: () => void;
+    projectId: string | null;
 }
 
 // Create the context
@@ -52,32 +53,51 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     const [currentProject, setCurrentProject] = useState<Project | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [projectId, setProjectId] = useState<string | null>(null);
+    const apiRequestPromiseRef = useRef<Promise<any> | null>(null);
 
-    const fetchProject = async (id: string) => {
+    const fetchProject = useCallback(async (id: string) => {
+        // If we're already showing this project, don't refetch
+        if (currentProject && currentProject.id === id) {
+            return;
+        }
+
+        // If there's already a request in progress for this ID, return its promise
+        if (apiRequestPromiseRef.current && projectId === id) {
+            return apiRequestPromiseRef.current;
+        }
+
         setLoading(true);
         setError(null);
+        setProjectId(id);
 
-        try {
-            const response = await apiRequest<{ success: boolean; project: Project }>(
-                API_ENDPOINTS.projects.get(id)
-            );
-
+        // Create new promise and store in ref
+        apiRequestPromiseRef.current = apiRequest<{ success: boolean; project: Project }>(
+            API_ENDPOINTS.projects.get(id)
+        ).then(response => {
             if (response.status === STATUS.SUCCESS && 'data' in response) {
                 setCurrentProject(response.data.project);
             } else {
                 setError("Failed to fetch project details");
             }
-        } catch (error) {
+            return response;
+        }).catch(error => {
             console.error("Error fetching project:", error);
             setError("An error occurred while fetching project data");
-        } finally {
+            throw error;
+        }).finally(() => {
             setLoading(false);
-        }
-    };
+            apiRequestPromiseRef.current = null;
+        });
 
-    const clearProject = () => {
+        return apiRequestPromiseRef.current;
+    }, [currentProject, projectId]);
+
+    // Clear project data
+    const clearProject = useCallback(() => {
         setCurrentProject(null);
-    };
+        setProjectId(null);
+    }, []);
 
     return (
         <ProjectContext.Provider
@@ -86,7 +106,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
                 loading,
                 error,
                 fetchProject,
-                clearProject
+                clearProject,
+                projectId
             }}
         >
             {children}

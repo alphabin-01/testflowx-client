@@ -17,13 +17,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 // Context and API
@@ -73,6 +66,22 @@ type ApiKeyResponse = {
     };
 };
 
+// Add new type for the rotate response
+type ApiKeyRotateResponse = {
+    success: boolean;
+    message: string;
+    oldKeyId: string;
+    apiKey: {
+        id: string;
+        key: string;
+        name: string;
+        project: string;
+        permissions: ApiKeyPermissions;
+        expiresAt: string;
+        createdAt: string;
+    };
+};
+
 // Default values
 const DEFAULT_KEY_NAME = "Test Runner Key";
 const DEFAULT_PERMISSIONS = {
@@ -87,7 +96,6 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState<string>("all");
 
     // Form states
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -116,14 +124,9 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
             );
         }
 
-        // Apply status filter
-        if (statusFilter !== "all") {
-            const isActive = statusFilter === "active";
-            result = result.filter(key => key.isActive === isActive);
-        }
 
         return result;
-    }, [apiKeys, searchQuery, statusFilter]);
+    }, [apiKeys, searchQuery]);
 
     // Load API keys
     const loadApiKeys = useCallback(async () => {
@@ -252,9 +255,44 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
         }
     };
 
+    // Add rotate key handler function
+    const handleRotateApiKey = async (id: string) => {
+        if (confirm("Are you sure you want to rotate this API key? This will generate a new key and invalidate the old one.")) {
+            try {
+                setIsGenerating(true);
+
+                const response = await apiRequest<ApiKeyRotateResponse>(API_ENDPOINTS.apiKeys.rotate(id), {
+                    method: "POST",
+                });
+
+                if (response.status === STATUS.SUCCESS && response.data) {
+                    toast.success("API key rotated successfully");
+                    setGeneratedKey(response.data.apiKey.key);
+                    setShowCreateForm(true);
+
+                    // Refresh the keys list
+                    setTimeout(async () => {
+                        try {
+                            await refreshApiKeys();
+                            await loadApiKeys();
+                        } catch (err) {
+                            console.error("Error refreshing keys:", err);
+                        }
+                    }, 300);
+                } else {
+                    toast.error("Failed to rotate API key");
+                }
+            } catch (error) {
+                toast.error("An error occurred while rotating the API key");
+                console.error(error);
+            } finally {
+                setIsGenerating(false);
+            }
+        }
+    };
+
     const handleClearFilters = useCallback(() => {
         setSearchQuery("");
-        setStatusFilter("all");
     }, []);
 
     // Loading state
@@ -281,80 +319,19 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
         );
     }
 
-    // Get the project name from context or use a fallback
-    const projectName = currentProject?.name || "Your Project";
-
-    // If no API keys found for this project, show a simplified create view
-    if (apiKeys.length === 0) {
-        return (
-            <Card className="w-full max-w-md mx-auto shadow-md">
-                <CardHeader>
-                    <CardTitle>Create API Key</CardTitle>
-                    <CardDescription>Generate an API key for {projectName}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {!generatedKey ? (
-                        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                            <div>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                    This API key will allow your test runner to communicate with TestFlowX.
-                                </p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="key-name">API Key Name</Label>
-                                <Input
-                                    id="key-name"
-                                    value={keyName}
-                                    onChange={(e) => setKeyName(e.target.value)}
-                                    placeholder="Enter a name for this API key"
-                                    disabled={isGenerating}
-                                />
-                            </div>
-
-                            <div className="space-y-4 mt-4">
-                                <Label>Permissions</Label>
-                                <PermissionCheckboxes
-                                    permissions={permissions}
-                                    onChange={handlePermissionChange}
-                                    disabled={isGenerating}
-                                />
-                            </div>
-
-                            <Button
-                                type="button"
-                                className="w-full"
-                                onClick={handleGenerateKey}
-                                disabled={isGenerating}
-                            >
-                                {isGenerating ? "Generating..." : "Generate API Key"}
-                            </Button>
-                        </form>
-                    ) : (
-                        <GeneratedKeyDisplay
-                            generatedKey={generatedKey}
-                            keyWasCopied={keyWasCopied}
-                            onCopy={handleCopyKey}
-                            onComplete={() => window.location.reload()}
-                        />
-                    )}
-                </CardContent>
-            </Card>
-        );
-    }
-
     // Render the main view with existing API keys
     return (
         <>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <Card className="flex flex-row items-center justify-between border-none shadow-none p-0">
                 <div></div>
-                <Button size="sm" onClick={toggleCreateForm} disabled={showCreateForm}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
+                <Button size="lg" onClick={toggleCreateForm} disabled={showCreateForm}>
+                    <PlusIcon className="h-4 w-4" />
                     New Key
                 </Button>
-            </CardHeader>
+            </Card>
 
             {showCreateForm && (
-                <Card className="bg-muted/30 mx-5">
+                <Card className="bg-muted/30">
                     <CardContent className="py-4">
                         <div className="space-y-4">
                             {!generatedKey ? (
@@ -386,9 +363,8 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
                         <KeysFilterBar
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
-                            statusFilter={statusFilter}
-                            setStatusFilter={setStatusFilter}
                             handleClearFilters={handleClearFilters}
+                            hasFilters={searchQuery !== ""}
                         />
 
                         <Table>
@@ -421,6 +397,32 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
                                                     <TableCell>{formattedExpiry}</TableCell>
                                                     <TableCell>
                                                         <div className="flex space-x-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleRotateApiKey(apiKey.id)}
+                                                                title="Rotate API Key"
+                                                                className="flex items-center"
+                                                            >
+                                                                <svg
+                                                                    className="h-4 w-4 mr-1 text-orange-500"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="24"
+                                                                    height="24"
+                                                                    viewBox="0 0 24 24"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    strokeWidth="2"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                >
+                                                                    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                                                    <path d="M3 3v5h5" />
+                                                                    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                                                                    <path d="M16 21h5v-5" />
+                                                                </svg>
+                                                                Rotate
+                                                            </Button>
                                                             <Button
                                                                 variant="outline"
                                                                 size="sm"
@@ -695,15 +697,11 @@ function CreateKeyForm({
 function KeysFilterBar({
     searchQuery,
     setSearchQuery,
-    statusFilter,
-    setStatusFilter,
     handleClearFilters,
     hasFilters
 }: {
     searchQuery: string;
     setSearchQuery: (value: string) => void;
-    statusFilter: string;
-    setStatusFilter: (value: string) => void;
     handleClearFilters: () => void;
     hasFilters: boolean;
 }) {
@@ -722,16 +720,6 @@ function KeysFilterBar({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[120px]">
-                        <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                </Select>
-
                 {hasFilters && (
                     <Button variant="ghost" size="sm" onClick={handleClearFilters}>
                         Clear Filters
