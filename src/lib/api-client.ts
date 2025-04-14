@@ -65,29 +65,13 @@ interface ApiRequestOptions {
     successMessage?: string;
     errorMessage?: string | null;
     skipAuth?: boolean;
+    withCredentials?: boolean;
 }
 
 interface ErrorHandlingOptions {
     showToast?: boolean;
     customMessage?: string | null;
 }
-
-const mapStatusToErrorType = (statusCode: number): ErrorType => {
-    switch (true) {
-        case statusCode === 401:
-            return ERROR_TYPES.AUTH;
-        case statusCode === 403:
-            return ERROR_TYPES.PERMISSION;
-        case statusCode === 404:
-            return ERROR_TYPES.NOT_FOUND;
-        case statusCode >= 400 && statusCode < 500:
-            return ERROR_TYPES.VALIDATION;
-        case statusCode >= 500:
-            return ERROR_TYPES.SERVER;
-        default:
-            return ERROR_TYPES.UNKNOWN;
-    }
-};
 
 const createErrorResponse = (type: ErrorType, message: string, details: ErrorDetails = {}): ErrorResponse => ({
     status: STATUS.ERROR,
@@ -139,41 +123,14 @@ const handleApiError = (error: unknown, options: ErrorHandlingOptions = {}): Err
         }
         return createErrorResponse(ERROR_TYPES.NETWORK, message);
     }
-
+    
     if (axiosError.response) {
-        const statusCode = axiosError.response.status;
-        const errorType = mapStatusToErrorType(statusCode);
-        let message = customMessage;
-
-        if (!message) {
-            switch (errorType) {
-                case ERROR_TYPES.AUTH:
-                    message = 'Authentication failed. Please log in again.';
-                    break;
-                case ERROR_TYPES.PERMISSION:
-                    message = 'You do not have permission to perform this action.';
-                    break;
-                case ERROR_TYPES.NOT_FOUND:
-                    message = 'The requested resource was not found.';
-                    break;
-                case ERROR_TYPES.VALIDATION:
-                    message = axiosError.response.data && typeof axiosError.response.data === 'object' && 'message' in axiosError.response.data
-                        ? String(axiosError.response.data.message)
-                        : 'Please check your input and try again.';
-                    break;
-                case ERROR_TYPES.SERVER:
-                    message = 'Server error occurred. Please try again later.';
-                    break;
-                default:
-                    message = 'An unexpected error occurred. Please try again.';
-            }
-        }
-
+        const responseData = axiosError.response.data as { message?: string };
+        const message = responseData.message || 'An error occurred. Please try again.';
         if (showToast) {
             toast.error(message);
         }
-
-        return createErrorResponse(errorType, message as string, axiosError.response.data as ErrorDetails);
+        return createErrorResponse(ERROR_TYPES.UNKNOWN, message, axiosError.response.data as ErrorDetails);
     }
 
     const message = customMessage || 'An unexpected error occurred. Please try again.';
@@ -197,12 +154,12 @@ export async function apiRequest<T = unknown>(endpoint: string, options: ApiRequ
         showErrorToast = true,
         successMessage = 'Operation successful',
         errorMessage = null,
-        skipAuth = false
-    } = options;
+        skipAuth = false } = options;
 
     const requestHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'ngrok-skip-browser-warning': '69420',
         ...headers
     };
 
@@ -219,7 +176,7 @@ export async function apiRequest<T = unknown>(endpoint: string, options: ApiRequ
         headers: requestHeaders,
         params,
         timeout,
-        withCredentials: true
+        withCredentials: false
     };
 
     if (method !== 'GET' && body) {

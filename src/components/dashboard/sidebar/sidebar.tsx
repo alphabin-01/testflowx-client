@@ -1,19 +1,18 @@
 "use client"
 
 import {
-    IconAlertTriangle,
+    IconBolt,
+    IconChartLine,
     IconFlask,
-    IconHelp,
+    IconHistory,
     IconHome,
-    IconInnerShadowTop,
-    IconKey,
-    IconLayoutDashboard,
+    IconList,
+    IconMoodSad,
     IconSettings,
     IconX
 } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
-import { NavSecondary } from "@/components/ui/nav-secondary"
 import {
     Sidebar,
     SidebarContent,
@@ -21,22 +20,8 @@ import {
     SidebarNav
 } from "@/components/ui/sidebar"
 import { useSidebarState } from "@/lib/sidebar-state"
+import { KeyIcon } from "lucide-react"
 import { useParams } from "next/navigation"
-
-const data = {
-    navSecondary: [
-        {
-            title: "Settings",
-            url: "#",
-            icon: IconSettings
-        },
-        {
-            title: "Get Help",
-            url: "#",
-            icon: IconHelp,
-        }
-    ],
-}
 
 export function AppSidebar({
     variant = "inset",
@@ -53,10 +38,10 @@ export function AppSidebar({
         return null;
     }
 
-    // Define base routes and project-specific routes
+    // Define dashboard links
     const dashboardLinks = [
         {
-            title: "Dashboard",
+            title: "Overview",
             href: `/projects/${projectId}`,
             icon: <IconHome className="h-4 w-4" />,
             variant: "default" as const,
@@ -64,26 +49,56 @@ export function AppSidebar({
         {
             title: "Analytics",
             href: `/projects/${projectId}/analytics`,
-            icon: <IconLayoutDashboard className="h-4 w-4" />,
+            icon: <IconChartLine className="h-4 w-4" />,
             variant: "default" as const,
         },
         {
-            title: "Tests",
+            title: "AI Insights",
+            href: `/projects/${projectId}/insights`,
+            icon: <IconBolt className="h-4 w-4" />,
+            variant: "default" as const,
+        },
+    ];
+
+    // Define tests links
+    const testsLinks = [
+        {
+            title: "All Tests",
             href: `/projects/${projectId}/tests`,
-            icon: <IconFlask className="h-4 w-4" />,
+            icon: <IconList className="h-4 w-4" />,
             variant: "default" as const,
         },
         {
             title: "Failures",
             href: `/projects/${projectId}/failures`,
-            icon: <IconAlertTriangle className="h-4 w-4" />,
+            icon: <IconMoodSad className="h-4 w-4" />,
             variant: "default" as const,
         },
         {
-            title: "API Keys",
-            href: `/projects/${projectId}/api-keys`,
-            icon: <IconKey className="h-4 w-4" />,
+            title: "Flaky Tests",
+            href: `/projects/${projectId}/flaky-tests`,
+            icon: <IconFlask className="h-4 w-4" />,
             variant: "default" as const,
+        },
+        {
+            title: "History",
+            href: `/projects/${projectId}/history`,
+            icon: <IconHistory className="h-4 w-4" />,
+            variant: "default" as const,
+        },
+    ];
+
+    const othersLinks = [
+        {
+            title: "Api Keys",
+            href: `/projects/${projectId}/api-keys`,
+            icon: <KeyIcon className="h-4 w-4" />,
+            variant: "default" as const,
+        },
+        {
+            title: "Settings",
+            href: `/projects/${projectId}/settings`,
+            icon: <IconSettings className="h-4 w-4" />,
         },
     ];
 
@@ -93,15 +108,19 @@ export function AppSidebar({
             collapsible={collapsible}
             className={`border-r bg-background relative p-0`}
         >
-            <SidebarHeader className="flex h-14 flex-row items-center border-b p-3">
-                <div className="flex items-center gap-2">
-                    <IconInnerShadowTop className="h-6 w-6" />
-                    <span className="font-semibold">TestFlowX</span>
+            <SidebarHeader className="flex h-14 flex-row items-center border-b bg-gradient-to-r from-primary/10 to-background p-2">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shadow-sm transition-colors hover:bg-primary/20">
+                        <IconHome className="h-5 w-5 text-primary" />
+                    </div>
+                    <span className="text-md font-semibold">
+                        TestPluse
+                    </span>
                 </div>
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="ml-auto h-8 w-8"
+                    className="ml-auto h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive transition-colors"
                     onClick={() => setSidebarVisible(false)}
                 >
                     <IconX className="h-4 w-4" />
@@ -109,12 +128,26 @@ export function AppSidebar({
                 </Button>
             </SidebarHeader>
             <SidebarContent className="py-3">
-                <SidebarNav
-                    links={dashboardLinks}
-                />
+                <div className="mb-4">
+                    <div className="px-4 py-2">
+                        <h3 className="text-xs font-semibold text-muted-foreground tracking-wider">DASHBOARD</h3>
+                    </div>
+                    <SidebarNav links={dashboardLinks} />
+                </div>
 
-                <NavSecondary items={data.navSecondary} className="mt-auto" />
+                <div>
+                    <div className="px-4 py-2">
+                        <h3 className="text-xs font-semibold text-muted-foreground tracking-wider">TESTS</h3>
+                    </div>
+                    <SidebarNav links={testsLinks} />
+                </div>
 
+                <div>
+                    <div className="px-4 py-2">
+                        <h3 className="text-xs font-semibold text-muted-foreground tracking-wider">OTHERS</h3>
+                    </div>
+                    <SidebarNav links={othersLinks} />
+                </div>
             </SidebarContent>
         </Sidebar>
     )

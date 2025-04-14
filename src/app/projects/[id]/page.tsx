@@ -1,7 +1,7 @@
 'use client';
 
-import { ApiKeyCheck } from "@/components/api-keys/api-key-check";
-import { DashboardContent } from "@/components/dashboard/content/overview";
+import { ApiKeyCheck } from "@/components/dashboard/api-keys/api-key-check";
+import Overview from "@/components/dashboard/overview/overview";
 import { useParams } from "next/navigation";
 
 export default function ProjectPage() {
@@ -9,7 +9,7 @@ export default function ProjectPage() {
 
     return (
         <ApiKeyCheck projectId={id as string}>
-            <DashboardContent />
+            <Overview />
         </ApiKeyCheck>
     );
 }

@@ -1,4 +1,4 @@
-import { ApiKeyList } from "@/components/api-keys/api-key-list";
+import { ApiKeyList } from "@/components/dashboard/api-keys/api-key-list";
 
 export default async function ProjectPage({
     params,

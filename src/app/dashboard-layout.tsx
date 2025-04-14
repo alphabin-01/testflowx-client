@@ -2,7 +2,7 @@
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/sidebar/sidebar";
-import { SiteHeader } from "@/components/dashboard/common/site-header";
+import { SiteHeader } from "@/components/dashboard/header/site-header";
 import { SidebarStateProvider } from "@/lib/sidebar-state";
 import { useSidebarState } from "@/lib/sidebar-state";
 

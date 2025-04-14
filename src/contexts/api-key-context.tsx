@@ -44,6 +44,7 @@ type ApiKeyContextType = {
     getProjectApiKeys: (projectId: string) => Promise<ApiKey[]>;
     refreshApiKeys: (projectId?: string) => Promise<void>;
     allApiKeys: ApiKey[];
+    getFirstApiKey: (projectId: string) => string | null;
 };
 
 const ApiKeyContext = createContext<ApiKeyContextType | undefined>(undefined);
@@ -104,6 +105,13 @@ export function ApiKeyProvider({ children }: { children: ReactNode }) {
         return data.apiKeys.filter(key => key.project._id === projectId);
     }, [fetchApiKeys]);
 
+    // Get first API key for a project from stored list
+    const getFirstApiKey = useCallback((projectId: string): string | null => {
+        const projectKeys = allApiKeys.filter(key => key.project._id === projectId);
+        if (projectKeys.length === 0) return null;
+        return projectKeys[0].key;
+    }, [allApiKeys]);
+
     // Check if a project has API keys
     const checkApiKeys = useCallback(async (projectId: string): Promise<boolean> => {
         // Return cached result if available
@@ -146,7 +154,8 @@ export function ApiKeyProvider({ children }: { children: ReactNode }) {
             isLoading,
             getProjectApiKeys,
             refreshApiKeys,
-            allApiKeys
+            allApiKeys,
+            getFirstApiKey
         }}>
             {children}
         </ApiKeyContext.Provider>

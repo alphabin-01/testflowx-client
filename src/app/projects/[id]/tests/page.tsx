@@ -1,7 +1,7 @@
 'use client';
 
-import { ApiKeyCheck } from "@/components/api-keys/api-key-check";
-import { TestsContent } from "@/components/dashboard/content/tests";
+import { ApiKeyCheck } from "@/components/dashboard/api-keys/api-key-check";
+import TestContent from "@/components/dashboard/all-tests/tests";
 import { useParams } from "next/navigation";
 
 export default function TestsPage() {
@@ -17,7 +17,7 @@ export default function TestsPage() {
                     </p>
                 </div>
 
-                <TestsContent />
+                <TestContent projectId={id as string} />
             </div>
         </ApiKeyCheck>
     );

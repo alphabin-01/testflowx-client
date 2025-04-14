@@ -6,38 +6,12 @@ export const API_ENDPOINTS = {
         update: (id: string) => `/projects/${id}`,
         delete: (id: string) => `/projects/${id}`,
     },
-    users: {
-        list: '/users',
-        create: '/users',
-        get: (id: string) => `/users/${id}`,
-        update: (id: string) => `/users/${id}`,
-        delete: (id: string) => `/users/${id}`,
-    },
-    reports: {
-        list: '/reports',
-        create: '/reports',
-        get: (id: string) => `/reports/${id}`,
-        update: (id: string) => `/reports/${id}`,
-        delete: (id: string) => `/reports/${id}`,
-    },
     auth: {
         login: '/auth/login',
         register: '/auth/register',
         logout: '/auth/logout',
         resetPassword: '/auth/reset-password',
         verifyEmail: '/auth/verify-email',
-    },
-    settings: {
-        get: '/settings',
-        update: '/settings',
-    },
-    profile: {
-        update: '/profile',
-        uploadAvatar: '/profile/avatar',
-    },
-    notifications: {
-        get: '/notifications',
-        update: '/notifications',
     },
     apiKeys: {
         list: '/api-keys',
@@ -46,5 +20,32 @@ export const API_ENDPOINTS = {
         revoke: (apiKeyId: string) => `/api-keys/${apiKeyId}/revoke`,
         rotate: (id: string) => `/api-keys/${id}/rotate`,
         getByProject: (projectId: string) => `/api-keys?projectId=${projectId}`,
+    },
+    testMetrics: {
+        getMetricsById: (metricsId: string) => `/metrics/${metricsId}`,
+        refreshMetrics: (metricsId: string) => `/metrics/${metricsId}/refresh`,
+        deleteMetrics: (metricsId: string) => `/metrics/${metricsId}`,
+        getProjectTestRunStats: (projectId: string) => `/projects/${projectId}/test-runs/stats`,
+        getProjectTestSuiteStats: (projectId: string) => `/projects/${projectId}/test-suites/stats`,
+    },
+    testSuites: {
+        get: (id: string) => `/test-suites/${id}`,
+        update: (id: string) => `/test-suites/${id}`,
+        complete: (id: string) => `/test-suites/${id}/complete`,
+        delete: (id: string) => `/test-suites/${id}`,
+    },
+    testCases: {
+        get: (id: string) => `/test-cases/${id}`,
+        update: (id: string) => `/test-cases/${id}`,
+        complete: (id: string) => `/test-cases/${id}/complete`,
+        delete: (id: string) => `/test-cases/${id}`,
+    },
+    testRuns: {
+        get: (id: string) => `/test-runs/${id}`,
+        getByRunId: (runId: string) => `/test-runs/run/${runId}`,
+        getByProjectId: (projectId: string) => `/projects/${projectId}/test-runs`,
+        update: (id: string) => `/test-runs/${id}`,
+        complete: (id: string) => `/test-runs/${id}/complete`,
+        delete: (id: string) => `/test-runs/${id}`,
     },
 }
