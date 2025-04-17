@@ -180,7 +180,7 @@ interface EnvMetricItemProps {
 
 const MetricCard = memo<MetricCardProps>(({ title, value, change, percentage, color, comparedTo }) => (
     <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-3">
             <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">{title}</p>
                 <div className="flex items-baseline justify-between">
@@ -359,7 +359,7 @@ const Overview = () => {
             </div>
 
             {/* Test Failure Categories and AI Insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 {/* Test Failure Categories */}
                 <Card className="lg:col-span-2">
                     <CardHeader>
@@ -420,7 +420,7 @@ const Overview = () => {
                     <CardTitle>Cross-Environment Test Performance</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
                         <div className="space-y-4">
                             <h4 className="font-medium text-center">Pass Rate</h4>
                             {crossEnvironmentData.passRate.map((item, index) => (

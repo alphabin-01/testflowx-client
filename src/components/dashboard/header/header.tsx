@@ -20,7 +20,7 @@ export function DashboardHeader() {
     const { user, isSignedIn } = useUser();
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-3 shadow-sm">
             <div className="flex items-center gap-2">
                 <Button
                     variant="ghost"

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects, type Project, type ProjectFormData } from "@/hooks/projects/use-projects";
-import { PlusCircle, RefreshCw } from "lucide-react";
+import { PlusCircle, RefreshCw, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -61,67 +61,97 @@ export default function ProjectsPage() {
   };
 
   return (
-    <div className="grid mx-auto py-8 px-6 max-w-7xl">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">Projects</h1>
-          <p className="text-muted-foreground text-sm">Manage your test projects</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchProjects} size="sm" className="h-9">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-          <Button onClick={handleOpenCreateDialog} size="sm" className="h-9 bg-black text-white hover:bg-gray-800">
-            <PlusCircle className="h-4 w-4 mr-2" />
-            New Project
-          </Button>
+    <div className="flex flex-col mx-auto min-h-[calc(100vh-4rem)] bg-background/50">
+      {/* Page Header */}
+      <div className="w-full bg-card border-b border-border/30 shadow-sm">
+        <div className="max-w-7xl mx-auto py-6 px-3 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded-md bg-primary/10">
+                <LayoutDashboard className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
+                <p className="text-muted-foreground text-sm mt-0.5">Manage and monitor your test projects</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                onClick={fetchProjects}
+                size="sm"
+                className="h-9 text-sm font-medium"
+              >
+                <RefreshCw className="h-3.5 w-3.5 mr-2" />
+                Refresh
+              </Button>
+              <Button
+                onClick={handleOpenCreateDialog}
+                size="sm"
+                className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium"
+              >
+                <PlusCircle className="h-3.5 w-3.5 mr-2" />
+                New Project
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="p-4 shadow-sm">
-              <Skeleton className="h-6 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-1/2 mb-4" />
-              <Skeleton className="h-16 w-full mb-4" />
-              <div className="flex justify-between">
-                <Skeleton className="h-9 w-32" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-8 w-8" />
-                  <Skeleton className="h-8 w-8" />
+      {/* Page Content */}
+      <div className="flex-1 max-w-7xl w-full mx-auto py-8 px-3 lg:px-8">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="overflow-hidden border border-border/40 bg-card shadow-sm rounded-lg">
+                <div className="p-5 space-y-4">
+                  <Skeleton className="h-6 w-3/4 mb-1.5" />
+                  <Skeleton className="h-4 w-1/2 mb-3" />
+                  <Skeleton className="h-20 w-full rounded-md mb-4" />
+                  <div className="flex justify-between pt-2">
+                    <Skeleton className="h-9 w-28 rounded-md" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-9 w-9 rounded-md" />
+                      <Skeleton className="h-9 w-9 rounded-md" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      ) : !projects || projects.length === 0 ? (
-        <Card className="border-dashed border-2 p-8 text-center">
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <h3 className="text-xl font-semibold">No projects found</h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              You haven&apos;t created any projects yet. Create your first project to get started.
-            </p>
-            <Button onClick={handleOpenCreateDialog} className="mt-4 bg-black text-white hover:bg-gray-800">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Project
-            </Button>
+              </Card>
+            ))}
           </div>
-        </Card>
-      ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onView={navigateToProjectDetails}
-              onEdit={handleOpenEditDialog}
-              onDelete={deleteProject}
-            />
-          ))}
-        </div>
-      )}
+        ) : !projects || projects.length === 0 ? (
+          <Card className="border border-dashed border-border/60 bg-card/50 rounded-lg shadow-sm">
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+                <PlusCircle className="h-8 w-8 text-primary/70" />
+              </div>
+              <h3 className="text-xl font-medium text-foreground mb-2">No projects found</h3>
+              <p className="text-muted-foreground max-w-md mx-auto mb-6">
+                You haven&apos;t created any projects yet. Create your first project to start setting up test cases and monitoring results.
+              </p>
+              <Button
+                onClick={handleOpenCreateDialog}
+                className="px-5 py-2.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create First Project
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {projects.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onView={navigateToProjectDetails}
+                onEdit={handleOpenEditDialog}
+                onDelete={deleteProject}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       <ProjectDialog
         open={isDialogOpen}

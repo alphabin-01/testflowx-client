@@ -7,7 +7,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,11 +31,9 @@ import {
 } from '@/components/ui/table';
 import { useTestRun } from '@/hooks/dashboard/useTestRun';
 import { TestCase } from '@/lib/typers';
+import { statusConfig as baseStatusConfig } from '@/lib/typers';
 import {
-    AlertTriangle,
-    CheckCircle,
     Clock,
-    Filter,
     GitBranch,
     GitCommit,
     MoreVertical,
@@ -44,74 +41,212 @@ import {
     Search,
     Terminal,
     XCircle,
+    CheckCircle,
+    AlertTriangle,
+    Tag
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useState, useCallback, useMemo } from 'react';
-import { TestStatus } from '@/components/dashboard/all-tests/details';
-// Sample tags for the dropdown (replace with actual tags from your data)
-const allTags = ['frontend', 'backend', 'api', 'performance', 'e2e', 'integration', 'unit'];
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-interface StatusIndicator {
-    color: string;
-    icon: React.ReactNode;
-}
-
-// Status indicators and styles
-const statusIndicator: Record<TestStatus, StatusIndicator> = {
-    completed: { color: 'bg-green-500', icon: <CheckCircle className="h-4 w-4 text-green-500" /> },
-    failed: { color: 'bg-red-500', icon: <XCircle className="h-4 w-4 text-red-500" /> },
-    flaky: { color: 'bg-amber-500', icon: <AlertTriangle className="h-4 w-4 text-amber-500" /> },
-    skipped: { color: 'bg-gray-500', icon: <Clock className="h-4 w-4 text-gray-500" /> },
+// Initialize with icons, just like in details.tsx
+const statusConfig = {
+    ...baseStatusConfig,
+    completed: {
+        ...baseStatusConfig.completed,
+        icon: <CheckCircle className="h-4 w-4" />
+    },
+    failed: {
+        ...baseStatusConfig.failed,
+        icon: <XCircle className="h-4 w-4" />
+    },
+    flaky: {
+        ...baseStatusConfig.flaky,
+        icon: <AlertTriangle className="h-4 w-4" />
+    },
+    skipped: {
+        ...baseStatusConfig.skipped,
+        icon: <Clock className="h-4 w-4" />
+    }
 };
-
-// Filter options
-const statusOptions = ['All', 'Success', 'Failed', 'Flaky'];
-const environmentOptions = ['All', 'CI', 'Local'];
 
 const TestContent = ({ projectId }: { projectId: string }) => {
     const router = useRouter();
-    const { isLoading, error, fetchTestRuns, getFilteredRuns, pagination } = useTestRun();
+    const { testRuns, isLoading, error, fetchTestRuns, pagination, getFilteredRuns } = useTestRun();
     const [selectedTest, setSelectedTest] = useState<TestCase | null>(null);
-
+    const [searchTerm, setSearchTerm] = useState('');
     // Filter states
     const [statusFilter, setStatusFilter] = useState('All');
-    const [envFilter, setEnvFilter] = useState('All');
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-    // Use the hook to get filtered runs
+ 
+    // Memoize the filtered runs
     const filteredRuns = useMemo(() =>
-        getFilteredRuns(statusFilter, envFilter, searchTerm, selectedTags),
-        [getFilteredRuns, statusFilter, envFilter, searchTerm, selectedTags]
-    );
+        getFilteredRuns(statusFilter, searchTerm, selectedTags),
+        [getFilteredRuns, statusFilter, searchTerm, selectedTags]);
 
-    // Use effect to fetch test runs on component mount
-    React.useEffect(() => {
-        fetchTestRuns();
-    }, [fetchTestRuns]);
+    // Combine both useEffect hooks into one with proper dependency tracking
+    useEffect(() => {
+        if (!isLoading) {
+            // Perform the fetch after a small delay to batch multiple state updates
+            const fetchTimeout = setTimeout(() => {
+                fetchTestRuns(pagination.page, pagination.limit, statusFilter);
+            }, 10);
 
-    // Format date/time
+            return () => clearTimeout(fetchTimeout);
+        }
+    }, [fetchTestRuns, statusFilter, pagination.page, pagination.limit, isLoading]);
+
+    // Memoize frequently used callbacks to prevent unnecessary re-renders
     const formatDateTime = useCallback((dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleString();
     }, []);
 
-    // Toggle tag selection
-    const toggleTagSelection = useCallback((tag: string) => {
-        setSelectedTags(prev =>
-            prev.includes(tag)
-                ? prev.filter(t => t !== tag)
-                : [...prev, tag]
-        );
-    }, []);
-
-    // Add a function to navigate to test run details
     const navigateToRunDetails = useCallback((runId: string) => {
         router.push(`/projects/${projectId}/test-run/${runId}`);
     }, [projectId, router]);
 
-    const clearAllTags = useCallback(() => setSelectedTags([]), []);
+    const handleRefreshClick = useCallback(() => {
+        fetchTestRuns(pagination.page, pagination.limit, statusFilter);
+    }, [fetchTestRuns, pagination.page, pagination.limit, statusFilter]);
 
+    const handlePreviousPage = useCallback(() => {
+        fetchTestRuns(pagination.page - 1, pagination.limit, statusFilter);
+    }, [fetchTestRuns, pagination.page, pagination.limit, statusFilter]);
+
+    const handleNextPage = useCallback(() => {
+        fetchTestRuns(pagination.page + 1, pagination.limit, statusFilter);
+    }, [fetchTestRuns, pagination.page, pagination.limit, statusFilter]);
+
+    const toggleTag = useCallback((tag: string) => {
+        setSelectedTags(prevTags =>
+            prevTags.includes(tag)
+                ? prevTags.filter(t => t !== tag)
+                : [...prevTags, tag]
+        );
+    }, []);
+
+    const clearAllTags = useCallback(() => {
+        setSelectedTags([]);
+    }, []);
+
+    // Memoize computed values to avoid recalculation on each render
+    const uniqueStatuses = useMemo(() => {
+        const statuses = new Set(['All']);
+        testRuns.forEach(run => {
+            if (run.status) statuses.add(run.status);
+        });
+        return Array.from(statuses);
+    }, [testRuns]);
+
+    const allAvailableTags = useMemo(() => {
+        const tags = new Set<string>();
+        testRuns.forEach(run => {
+            run.tags.forEach(tag => tags.add(tag));
+        });
+        return Array.from(tags);
+    }, [testRuns]);
+
+    // Memoize UI sections to prevent unnecessary re-renders
+    const filterSection = useMemo(() => (
+        <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="search"
+                        placeholder="Search test runs..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex gap-2">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {uniqueStatuses.map((status) => (
+                                <SelectItem key={status} value={status}>{status}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="gap-1">
+                                <Tag className="h-4 w-4" />
+                                Tags {selectedTags.length > 0 && `(${selectedTags.length})`}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[200px] p-2">
+                            {allAvailableTags.length === 0 ? (
+                                <p className="text-sm text-muted-foreground py-1 px-2">No tags available</p>
+                            ) : (
+                                <div className="max-h-[200px] overflow-y-auto">
+                                    {allAvailableTags.map(tag => (
+                                        <div key={tag} className="flex items-center py-1 px-2 hover:bg-muted rounded">
+                                            <Button
+                                                variant={selectedTags.includes(tag) ? "default" : "outline"}
+                                                size="sm"
+                                                className="h-6 w-full justify-start text-xs"
+                                                onClick={() => toggleTag(tag)}
+                                            >
+                                                {tag}
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {selectedTags.length > 0 && (
+                                <Button
+                                    variant="ghost"
+                                    className="w-full mt-2 h-7 text-xs"
+                                    onClick={clearAllTags}
+                                >
+                                    Clear all
+                                </Button>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Display selected tag filters */}
+            {selectedTags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedTags.map(tag => (
+                        <Badge
+                            key={tag}
+                            variant="secondary"
+                            className="pr-1 flex items-center gap-1"
+                        >
+                            {tag}
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 ml-1"
+                                onClick={() => toggleTag(tag)}
+                            >
+                                <XCircle className="h-3 w-3" />
+                            </Button>
+                        </Badge>
+                    ))}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-5 text-xs"
+                        onClick={clearAllTags}
+                    >
+                        Clear all
+                    </Button>
+                </div>
+            )}
+        </div>
+    ), [searchTerm, statusFilter, selectedTags, uniqueStatuses, allAvailableTags, toggleTag, clearAllTags]);
+
+    // Main component render
     return (
         <div className="space-y-4">
             <Card className="shadow-sm">
@@ -122,7 +257,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                             variant="outline"
                             size="sm"
                             className="h-8"
-                            onClick={() => fetchTestRuns()}
+                            onClick={handleRefreshClick}
                             disabled={isLoading}
                         >
                             <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
@@ -139,89 +274,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                         </div>
                     )}
 
-                    <div className="space-y-3">
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    type="search"
-                                    placeholder="Search test runs..."
-                                    className="pl-8"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="flex gap-2">
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                    <SelectTrigger className="w-[120px]">
-                                        <SelectValue placeholder="Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {statusOptions.map((status) => (
-                                            <SelectItem key={status} value={status}>{status}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                <Select value={envFilter} onValueChange={setEnvFilter}>
-                                    <SelectTrigger className="w-[120px]">
-                                        <SelectValue placeholder="Environment" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {environmentOptions.map((env) => (
-                                            <SelectItem key={env} value={env}>{env}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="flex gap-1">
-                                            <Filter className="h-4 w-4" />
-                                            Tags
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-56">
-                                        {allTags.map((tag) => (
-                                            <DropdownMenuItem key={tag} className="flex gap-2 items-center">
-                                                <Checkbox
-                                                    checked={selectedTags.includes(tag)}
-                                                    onCheckedChange={() => toggleTagSelection(tag)}
-                                                    id={`tag-${tag}`}
-                                                />
-                                                <label htmlFor={`tag-${tag}`} className="flex-1 cursor-pointer">{tag}</label>
-                                            </DropdownMenuItem>
-                                        ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </div>
-
-                        {selectedTags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {selectedTags.map(tag => (
-                                    <Badge
-                                        key={tag}
-                                        variant="secondary"
-                                        className="cursor-pointer"
-                                        onClick={() => toggleTagSelection(tag)}
-                                    >
-                                        {tag}
-                                        <XCircle className="ml-1 h-3 w-3" />
-                                    </Badge>
-                                ))}
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 text-xs"
-                                    onClick={clearAllTags}
-                                >
-                                    Clear all
-                                </Button>
-                            </div>
-                        )}
-                    </div>
+                    {filterSection}
                 </CardContent>
             </Card>
 
@@ -257,11 +310,11 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                             ) : (
                                 filteredRuns.map((run) => (
                                     <TableRow
-                                        key={run.id}
+                                        key={run._id}
                                         className="hover:bg-muted/50 cursor-pointer"
-                                        onClick={() => navigateToRunDetails(run.id)}
+                                        onClick={() => navigateToRunDetails(run._id)}
                                     >
-                                        <TableCell className="font-medium">{run.id}</TableCell>
+                                        <TableCell className="font-medium">{run._id}</TableCell>
                                         <TableCell>{formatDateTime(run.startTime)}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1">
@@ -271,7 +324,8 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5">
-                                                <div className={`h-2 w-2 rounded-full ${statusIndicator[run.status as TestStatus].color}`}></div>
+                                                <div className={`h-2 w-2 rounded-full ${statusConfig[run.status]?.bgColor || 'bg-gray-200'
+                                                    }`}></div>
                                                 <span className="capitalize">{run.status}</span>
                                             </div>
                                         </TableCell>
@@ -303,7 +357,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => navigateToRunDetails(run.id)}>
+                                                    <DropdownMenuItem onClick={() => navigateToRunDetails(run._id)}>
                                                         View Details
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem>Download Results</DropdownMenuItem>
@@ -328,7 +382,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                     variant="outline"
                                     size="sm"
                                     disabled={pagination.page <= 1}
-                                    onClick={() => fetchTestRuns(pagination.page - 1)}
+                                    onClick={handlePreviousPage}
                                 >
                                     Previous
                                 </Button>
@@ -336,7 +390,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                     variant="outline"
                                     size="sm"
                                     disabled={pagination.page >= pagination.pages}
-                                    onClick={() => fetchTestRuns(pagination.page + 1)}
+                                    onClick={handleNextPage}
                                 >
                                     Next
                                 </Button>
@@ -366,7 +420,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                 <h3 className="font-medium text-lg">{selectedTest.title}</h3>
                                 <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center gap-1.5">
-                                        {statusIndicator[selectedTest.status]?.icon}
+                                        {statusConfig[selectedTest.status]?.icon}
                                         <span className="text-sm capitalize">{selectedTest.status}</span>
                                     </div>
                                     <div className="text-sm text-muted-foreground flex items-center gap-1">
@@ -382,8 +436,6 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                     <p className="text-sm text-red-700 dark:text-red-400">{selectedTest.error}</p>
                                 </div>
                             )}
-
-                            {/* Additional test details would go here */}
                         </div>
                     </CardContent>
                 </Card>
@@ -392,4 +444,4 @@ const TestContent = ({ projectId }: { projectId: string }) => {
     );
 };
 
-export default TestContent; 
+export default TestContent;

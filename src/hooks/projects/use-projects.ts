@@ -53,20 +53,20 @@ export function useProjects() {
 
     const createProject = useCallback(async (formData: ProjectFormData) => {
         try {
+
             const response = await apiRequest(API_ENDPOINTS.projects.create, {
                 method: "POST",
                 body: formData,
             });
 
             if (response.status !== STATUS.SUCCESS) {
-                throw new Error("Failed to create project");
+                throw new Error(response.error.message);
             }
 
             toast("Project has been created.");
             await fetchProjects();
             return true;
         } catch (error) {
-            console.error("Error creating project:", error);
             return false;
         }
     }, [fetchProjects]);

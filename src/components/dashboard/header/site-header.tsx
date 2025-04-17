@@ -23,12 +23,10 @@ export function SiteHeader({ className, ...props }: React.HTMLAttributes<HTMLEle
   const { user } = useAuth();
   const { currentProject } = useProject();
 
-  console.log(`currentProject: ${currentProject}`);
-  
   return (
     <header
       className={cn(
-        "flex h-14 justify-between items-center gap-2 border-b bg-background px-4 lg:px-6",
+        "flex h-14 justify-between items-center gap-2 border-b bg-background px-4 lg:px-3",
         className
       )}
       {...props}

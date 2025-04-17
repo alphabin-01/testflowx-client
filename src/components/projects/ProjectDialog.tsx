@@ -130,7 +130,7 @@ export function ProjectDialog({
                             : "Fill in the details to create a new project."}
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-6 py-4">
+                <div className="grid gap-3 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="name" className="flex items-center gap-1">
                             Project Name

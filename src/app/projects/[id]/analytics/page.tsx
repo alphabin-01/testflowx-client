@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
                     </p>
                 </div>
 
-                <AnalyticsContent />
+                <AnalyticsContent projectId={id as string} />
             </div>
         </ApiKeyCheck>
     );

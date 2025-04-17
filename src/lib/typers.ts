@@ -1,8 +1,10 @@
+import { ReactNode } from "react";
+
 type TestStatus = 'completed' | 'failed' | 'flaky' | 'skipped';
 type Environment = 'ci' | 'local';
 
 export interface TestCase {
-    id: string;
+    _id: string;
     title: string;
     fullTitle: string;
     status: TestStatus;
@@ -24,7 +26,7 @@ export interface TestCase {
 }
 
 export interface TestSuite {
-    id: string;
+    _id: string;
     name: string;
     fileName: string;
     filePath: string;
@@ -47,7 +49,7 @@ export interface TestSuite {
 }
 
 export  interface TestRun {
-    id: string;
+    _id: string;
     runId: string;
     startTime: string;
     endTime: string;
@@ -87,4 +89,25 @@ export  interface TestRun {
     updatedAt: string;
 }
 
-
+export const statusConfig: Record<TestStatus, { color: string; bgColor: string; icon: ReactNode }> = {
+    completed: {
+        color: 'text-green-500',
+        bgColor: 'bg-green-100 dark:bg-green-900/20',
+        icon: null // This will be set in the components that use it
+    },
+    failed: {
+        color: 'text-red-500',
+        bgColor: 'bg-red-100 dark:bg-red-900/20',
+        icon: null
+    },
+    flaky: {
+        color: 'text-amber-500',
+        bgColor: 'bg-amber-100 dark:bg-amber-900/20',
+        icon: null
+    },
+    skipped: {
+        color: 'text-gray-500',
+        bgColor: 'bg-gray-100 dark:bg-gray-800',
+        icon: null
+    }
+}; 

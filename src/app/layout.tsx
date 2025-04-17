@@ -7,6 +7,7 @@ import { AuthProvider } from "@/components/auth/auth-context";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { ProjectProvider } from "@/contexts/project-context";
 import { ApiKeyProvider } from "@/contexts/api-key-context";
+import React from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

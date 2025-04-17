@@ -3,6 +3,7 @@ import type { Configuration } from "webpack";
 
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
+  reactStrictMode: false,
   webpack: (config: Configuration) => {
     config.resolve = config.resolve || {};
     config.resolve.fallback = {

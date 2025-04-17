@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { API_ENDPOINTS } from "@/lib/api";
 import { apiRequest, STATUS } from "@/lib/api-client";
 import {
@@ -21,8 +22,19 @@ import {
     CartesianGrid,
     Tooltip,
     Legend,
-    Cell
+    Cell,
+    Line,
+    LineChart
 } from "recharts";
+
+const formatDuration = (ms: number) => {
+    if (ms < 1000) return `${ms}ms`;
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
+};
 
 // Types for metrics API response
 interface Metrics {
@@ -123,7 +135,7 @@ function ModuleTestPerformanceTable({ testData }: {
 
     return (
         <Card>
-            <CardHeader className="border-b pb-4">
+            <CardHeader className="border-b pb-2">
                 <CardTitle className="text-xl">Top Slowest Tests</CardTitle>
                 <CardDescription>Performance by test</CardDescription>
             </CardHeader>
@@ -132,9 +144,9 @@ function ModuleTestPerformanceTable({ testData }: {
                     <table className="w-full caption-bottom text-sm">
                         <thead>
                             <tr className="bg-muted/50">
-                                <th className="h-12 px-6 text-left font-semibold">Test</th>
-                                <th className="h-12 px-6 text-left font-semibold">Avg. Duration</th>
-                                <th className="h-12 px-6 text-left font-semibold">Max Duration</th>
+                                <th className="px-4 py-2 text-left font-semibold">Test</th>
+                                <th className="px-4 py-2 text-left font-semibold">Avg. Duration</th>
+                                <th className="px-4 py-2 text-left font-semibold">Max Duration</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -143,11 +155,11 @@ function ModuleTestPerformanceTable({ testData }: {
                                     key={test.testId}
                                     className={`${index < testData.length - 1 ? 'border-b' : ''} transition-colors hover:bg-muted/50`}
                                 >
-                                    <td className="p-6 font-medium">{test.title}</td>
-                                    <td className={`p-6 font-medium ${getStatusColor(test.averageDuration)}`}>
+                                    <td className="p-3 font-medium">{test.title}</td>
+                                    <td className={`p-3 font-medium ${getStatusColor(test.averageDuration)}`}>
                                         {(test.averageDuration / 1000).toFixed(1)}s
                                     </td>
-                                    <td className="p-6">{(test.maxDuration / 1000).toFixed(1)}s</td>
+                                    <td className="p-3">{(test.maxDuration / 1000).toFixed(1)}s</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -179,10 +191,10 @@ function EnvironmentsTable({ environments }: {
                     <table className="w-full caption-bottom text-sm">
                         <thead>
                             <tr className="bg-muted/50">
-                                <th className="h-12 px-6 text-left font-semibold">Environment</th>
-                                <th className="h-12 px-6 text-left font-semibold">Runs</th>
-                                <th className="h-12 px-6 text-left font-semibold">Pass Rate</th>
-                                <th className="h-12 px-6 text-left font-semibold">Avg. Duration</th>
+                                <th className="h-12 px-3 text-left font-semibold">Environment</th>
+                                <th className="h-12 px-3 text-left font-semibold">Runs</th>
+                                <th className="h-12 px-3 text-left font-semibold">Pass Rate</th>
+                                <th className="h-12 px-3 text-left font-semibold">Avg. Duration</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -191,12 +203,12 @@ function EnvironmentsTable({ environments }: {
                                     key={env._id || env.name}
                                     className={`${index < environments.length - 1 ? 'border-b' : ''} transition-colors hover:bg-muted/50`}
                                 >
-                                    <td className="p-6 font-medium">{env.name}</td>
-                                    <td className="p-6">{env.runs}</td>
-                                    <td className="p-6 font-medium text-green-600">
+                                    <td className="p-3 font-medium">{env.name}</td>
+                                    <td className="p-3">{env.runs}</td>
+                                    <td className="p-3 font-medium text-green-600">
                                         {env.passRate.toFixed(1)}%
                                     </td>
-                                    <td className="p-6">{(env.averageDuration / 1000).toFixed(1)}s</td>
+                                    <td className="p-3">{(env.averageDuration / 1000).toFixed(1)}s</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -229,10 +241,11 @@ function BrowsersTable({ browsers }: {
                     <table className="w-full caption-bottom text-sm">
                         <thead>
                             <tr className="bg-muted/50">
-                                <th className="h-12 px-6 text-left font-semibold">Browser</th>
-                                <th className="h-12 px-6 text-left font-semibold">Version</th>
-                                <th className="h-12 px-6 text-left font-semibold">Runs</th>
-                                <th className="h-12 px-6 text-left font-semibold">Pass Rate</th>
+                                <th className="h-12 px-3 text-left font-semibold">Browser</th>
+                                <th className="h-12 px-3 text-left font-semibold">Version</th>
+                                <th className="h-12 px-3 text-left font-semibold">Runs</th>
+                                <th className="h-12 px-3 text-left font-semibold">Pass Rate</th>
+                                <th className="h-12 px-3 text-left font-semibold">Avg. Duration</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -241,12 +254,13 @@ function BrowsersTable({ browsers }: {
                                     key={browser._id || `${browser.name}-${browser.version}`}
                                     className={`${index < browsers.length - 1 ? 'border-b' : ''} transition-colors hover:bg-muted/50`}
                                 >
-                                    <td className="p-6 font-medium">{browser.name}</td>
-                                    <td className="p-6">{browser.version}</td>
-                                    <td className="p-6">{browser.runs}</td>
-                                    <td className="p-6 font-medium text-green-600">
+                                    <td className="p-3 font-medium">{browser.name}</td>
+                                    <td className="p-3">{browser.version}</td>
+                                    <td className="p-3">{browser.runs}</td>
+                                    <td className="p-3 font-medium text-green-600">
                                         {browser.passRate.toFixed(1)}%
                                     </td>
+                                    <td className="p-3">{(browser.averageDuration / 1000).toFixed(1)}s</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -278,10 +292,10 @@ function BranchesTable({ branches }: {
                     <table className="w-full caption-bottom text-sm">
                         <thead>
                             <tr className="bg-muted/50">
-                                <th className="h-12 px-6 text-left font-semibold">Branch</th>
-                                <th className="h-12 px-6 text-left font-semibold">Runs</th>
-                                <th className="h-12 px-6 text-left font-semibold">Pass Rate</th>
-                                <th className="h-12 px-6 text-left font-semibold">Avg. Duration</th>
+                                <th className="h-12 px-3 text-left font-semibold">Branch</th>
+                                <th className="h-12 px-3 text-left font-semibold">Runs</th>
+                                <th className="h-12 px-3 text-left font-semibold">Pass Rate</th>
+                                <th className="h-12 px-3 text-left font-semibold">Avg. Duration</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -290,12 +304,12 @@ function BranchesTable({ branches }: {
                                     key={branch._id || branch.name}
                                     className={`${index < branches.length - 1 ? 'border-b' : ''} transition-colors hover:bg-muted/50`}
                                 >
-                                    <td className="p-6 font-medium">{branch.name}</td>
-                                    <td className="p-6">{branch.runs}</td>
-                                    <td className="p-6 font-medium text-green-600">
+                                    <td className="p-3 font-medium">{branch.name}</td>
+                                    <td className="p-3">{branch.runs}</td>
+                                    <td className="p-3 font-medium text-green-600">
                                         {branch.passRate.toFixed(1)}%
                                     </td>
-                                    <td className="p-6">{(branch.averageDuration / 1000).toFixed(1)}s</td>
+                                    <td className="p-3">{(branch.averageDuration / 1000).toFixed(1)}s</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -316,7 +330,7 @@ function TestSummaryBarChart({ summary }: { summary: Metrics['summary'] }) {
     ];
 
     return (
-        <Card className="shadow-xl rounded-2xl border border-gray-200">
+        <Card className="shadow-xl rounded-2xl border border-gray-200 w-full md:w-[50%]">
             <CardHeader className="border-b pb-4">
                 <CardTitle className="text-xl font-semibold text-gray-800">
                     Test Summary
@@ -325,7 +339,7 @@ function TestSummaryBarChart({ summary }: { summary: Metrics['summary'] }) {
                     Overview of total, passed, failed, skipped, and flaky tests
                 </CardDescription>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-3">
                 <div className="h-[20rem] sm:h-[24rem] md:h-[28rem]">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
@@ -380,89 +394,210 @@ function TestSummaryBarChart({ summary }: { summary: Metrics['summary'] }) {
 
 
 function TrendsAreaChart({ trends }: { trends: Metrics['trends'] }) {
-    const trendData = trends.passRate.map((item, index) => {
+
+    const actualTrends = trends;
+
+    const trendData = actualTrends.passRate.map((item, index) => {
         const date = new Date(item.date).toLocaleDateString(undefined, {
             month: 'short',
             day: 'numeric',
+            year: 'numeric'
         });
+
         return {
             date,
-            passRate: item.value,
-            testCount: trends.testCount[index]?.value || 0,
-            duration: trends.duration[index]?.value || 0,
+            passRate: parseFloat(item.value.toFixed(2)),
+            testCount: actualTrends.testCount[index]?.value || 0,
+            duration: actualTrends.duration[index]?.value || 0,
         };
     });
 
+
     return (
-        <Card className="shadow-xl rounded-2xl border border-gray-200">
+        <Card className="shadow-lg rounded-xl border border-gray-200 w-full">
             <CardHeader className="border-b pb-4">
                 <CardTitle className="text-xl font-semibold text-gray-800">
-                    Trends Over Time
+                    Test Metrics Trends
                 </CardTitle>
                 <CardDescription className="text-gray-500">
-                    Visualize pass rate, test count, and duration progression
+                    Detailed visualization of key test metrics over time
                 </CardDescription>
             </CardHeader>
-            <CardContent className="p-6">
-                <div className="h-[24rem]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart
-                            data={trendData}
-                            margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                            <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6b7280' }} />
-                            <YAxis
-                                yAxisId="left"
-                                tick={{ fontSize: 12, fill: '#6b7280' }}
-                                tickFormatter={(val) => `${val}%`}
-                            />
-                            <YAxis
-                                yAxisId="right"
-                                orientation="right"
-                                tick={{ fontSize: 12, fill: '#6b7280' }}
-                                tickFormatter={(val) => val.toLocaleString()}
-                            />
-                            <Tooltip
-                                formatter={(value: number, name: string) => [
-                                    name === 'Pass Rate (%)'
-                                        ? `${value.toFixed(2)}%`
-                                        : value.toLocaleString(),
-                                    name,
-                                ]}
-                                labelClassName="font-semibold"
-                            />
-                            <Legend />
-                            <Area
-                                yAxisId="left"
-                                type="monotone"
-                                dataKey="passRate"
-                                name="Pass Rate (%)"
-                                stroke="#16a34a"
-                                fill="#bbf7d0"
-                                fillOpacity={0.3}
-                            />
-                            <Area
-                                yAxisId="right"
-                                type="monotone"
-                                dataKey="testCount"
-                                name="Test Count"
-                                stroke="#2563eb"
-                                fill="#bfdbfe"
-                                fillOpacity={0.25}
-                            />
-                            <Area
-                                yAxisId="right"
-                                type="monotone"
-                                dataKey="duration"
-                                name="Duration (ms)"
-                                stroke="#d97706"
-                                fill="#fde68a"
-                                fillOpacity={0.3}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
+            <CardContent className="p-3">
+                <Tabs defaultValue="combined" className="w-full">
+                    <TabsList className="mb-4 grid grid-cols-4 gap-2">
+                        <TabsTrigger value="combined">All Metrics</TabsTrigger>
+                        <TabsTrigger value="passRate">Pass Rate</TabsTrigger>
+                        <TabsTrigger value="testCount">Test Count</TabsTrigger>
+                        <TabsTrigger value="duration">Duration</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="combined" className="mt-2">
+                        <div className="h-[24rem]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={trendData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                    <XAxis
+                                        dataKey="date"
+                                        tick={{ fontSize: 12, fill: '#6b7280' }}
+                                    />
+                                    <YAxis
+                                        yAxisId="passRate"
+                                        orientation="left"
+                                        domain={[0, 100]}
+                                        tick={{ fontSize: 12, fill: '#16a34a' }}
+                                        tickFormatter={(val) => `${val}%`}
+                                        label={{ value: 'Pass Rate (%)', angle: -90, position: 'insideLeft', fill: '#16a34a', fontSize: 12 }}
+                                    />
+                                    <YAxis
+                                        yAxisId="testCount"
+                                        orientation="right"
+                                        tick={{ fontSize: 12, fill: '#2563eb' }}
+                                        label={{ value: 'Test Count', angle: 90, position: 'insideRight', fill: '#2563eb', fontSize: 12 }}
+                                    />
+                                    <YAxis
+                                        yAxisId="duration"
+                                        orientation="right"
+                                        tickFormatter={(val) => formatDuration(val)}
+                                        tick={false}
+                                    />
+                                    <Tooltip
+                                        formatter={(value, name) => {
+                                            if (name === 'Pass Rate') return [`${value}%`, name];
+                                            if (name === 'Duration') return [formatDuration(Number(value)), name];
+                                            return [value, name];
+                                        }}
+                                        labelFormatter={(label) => `Date: ${label}`}
+                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                                    />
+                                    <Legend />
+                                    <Line
+                                        yAxisId="passRate"
+                                        type="monotone"
+                                        dataKey="passRate"
+                                        name="Pass Rate"
+                                        stroke="#16a34a"
+                                        strokeWidth={3}
+                                        dot={{ fill: '#16a34a', r: 6 }}
+                                        activeDot={{ r: 8 }}
+                                    />
+                                    <Line
+                                        yAxisId="testCount"
+                                        type="monotone"
+                                        dataKey="testCount"
+                                        name="Test Count"
+                                        stroke="#2563eb"
+                                        strokeWidth={3}
+                                        dot={{ fill: '#2563eb', r: 6 }}
+                                        activeDot={{ r: 8 }}
+                                    />
+                                    <Line
+                                        yAxisId="duration"
+                                        type="monotone"
+                                        dataKey="duration"
+                                        name="Duration"
+                                        stroke="#d97706"
+                                        strokeWidth={3}
+                                        dot={{ fill: '#d97706', r: 6 }}
+                                        activeDot={{ r: 8 }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="passRate" className="mt-2">
+                        <div className="h-[24rem]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                    data={trendData}
+                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6b7280' }} />
+                                    <YAxis
+                                        domain={[0, 100]}
+                                        tick={{ fontSize: 12, fill: '#6b7280' }}
+                                        tickFormatter={(val) => `${val}%`}
+                                    />
+                                    <Tooltip
+                                        formatter={(value) => [`${value}%`, 'Pass Rate']}
+                                        labelFormatter={(label) => `Date: ${label}`}
+                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                                    />
+                                    <Legend />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="passRate"
+                                        name="Pass Rate"
+                                        stroke="#16a34a"
+                                        fill="#bbf7d0"
+                                        fillOpacity={0.6}
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="testCount" className="mt-2">
+                        <div className="h-[24rem]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={trendData}
+                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6b7280' }} />
+                                    <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
+                                    <Tooltip
+                                        formatter={(value) => [value, 'Test Count']}
+                                        labelFormatter={(label) => `Date: ${label}`}
+                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                                    />
+                                    <Legend />
+                                    <Bar
+                                        dataKey="testCount"
+                                        name="Test Count"
+                                        fill="#2563eb"
+                                        radius={[4, 4, 0, 0]}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="duration" className="mt-2">
+                        <div className="h-[24rem]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                    data={trendData}
+                                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#6b7280' }} />
+                                    <YAxis
+                                        tick={{ fontSize: 12, fill: '#6b7280' }}
+                                        tickFormatter={(val) => formatDuration(val)}
+                                    />
+                                    <Tooltip
+                                        formatter={(value) => [formatDuration(Number(value)), 'Duration']}
+                                        labelFormatter={(label) => `Date: ${label}`}
+                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                                    />
+                                    <Legend />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="duration"
+                                        name="Duration"
+                                        stroke="#d97706"
+                                        fill="#fde68a"
+                                        fillOpacity={0.6}
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </TabsContent>
+                </Tabs>
             </CardContent>
         </Card>
     );
@@ -470,24 +605,19 @@ function TrendsAreaChart({ trends }: { trends: Metrics['trends'] }) {
 
 
 // Main component that brings everything together
-export function AnalyticsContent() {
+export function AnalyticsContent({ projectId }: { projectId: string }) {
     const [metrics, setMetrics] = useState<Metrics | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchMetrics = async () => {
             try {
-                // Use a hardcoded metrics ID for now - in real code, you'd probably get this from a route parameter
-                const metricsId = "67f8dd368899263bbb1c7933";
-                const response = await apiRequest<{ success: boolean, metrics: Metrics }>(API_ENDPOINTS.testMetrics.getMetricsById(metricsId), {
+                const response = await apiRequest<{ success: boolean, metrics: Metrics[] }>(API_ENDPOINTS.testMetrics.getMetricsById(projectId), {
                     method: "GET",
-                    headers: {
-                        "X-API-KEY": "tfx_dev_459d26229b15a03b380c6488eab183f971c153b1dc86a080"
-                    }
                 });
 
                 if (response.status === STATUS.SUCCESS && response.data && response.data.success) {
-                    setMetrics(response.data.metrics);
+                    setMetrics(response.data.metrics[0]);
                 }
             } catch (error) {
                 console.error("Failed to fetch metrics:", error);
@@ -500,7 +630,12 @@ export function AnalyticsContent() {
     }, []);
 
     if (loading) {
-        return <div className="flex justify-center items-center min-h-[400px]">Loading metrics...</div>;
+        return (
+            <div className="flex justify-center items-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500"></div>
+                <span className="ml-3 text-gray-600">Loading metrics...</span>
+            </div>
+        );
     }
 
     if (!metrics) {
@@ -546,7 +681,7 @@ export function AnalyticsContent() {
     return (
         <div className="space-y-8">
             {/* Metric Cards */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
                 {metricCardsData.map((metric) => (
                     <MetricCard
                         key={metric.title}
@@ -560,21 +695,23 @@ export function AnalyticsContent() {
                 ))}
             </div>
 
-            {/* New Charts Section with Summary Bar Chart */}
-            <TestSummaryBarChart summary={metrics.summary} />
 
-            {/* Trends Area Chart */}
-            {metrics.trends.passRate.length > 0 && (
-                <TrendsAreaChart trends={metrics.trends} />
-            )}
+            <div className="flex gap-3 w-full">
+                {/* New Charts Section with Summary Bar Chart */}
+                <TestSummaryBarChart summary={metrics.summary} />
+                {/* Trends Area Chart */}
+                {metrics.trends.passRate.length > 0 && (
+                    <TrendsAreaChart trends={metrics.trends} />
+                )}
+            </div>
+
 
             {/* Tables Section */}
             {metrics.topSlowestTests.length > 0 && (
                 <ModuleTestPerformanceTable testData={metrics.topSlowestTests} />
             )}
-
             {/* Additional Data Tables */}
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2">
                 {metrics.environments && metrics.environments.length > 0 && (
                     <EnvironmentsTable environments={metrics.environments} />
                 )}

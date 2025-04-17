@@ -1,729 +1,403 @@
-"use client";
+'use client'
 
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
-// Import UI components
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
-} from '@/components/ui/card';
-
-// Import icons
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from "@/components/ui/table";
+import { useTestDetail } from "@/hooks/dashboard/useTestDetail";
 import {
+    AlertCircle,
     AlertTriangle,
-    CheckCircle,
-    ChevronDown,
-    ChevronRight,
+    CheckCircle2,
     Clock,
-    Download,
-    ExternalLink,
-    FolderKanban,
+    Computer,
     GitBranch,
     HomeIcon,
-    Info,
-    PlayCircle,
     RefreshCw,
-    Terminal,
     XCircle
-} from 'lucide-react';
+} from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
+import BreadcrumbNav from "../component/breadcumb";
+import TestSuiteItem from "./item";
+import { TestSuite } from "@/lib/typers";
 
-// Import components
-import BreadcrumbNav from '@/components/dashboard/component/breadcumb';
-
-// Dynamically import the TestDetailsDrawer to avoid hydration issues
-const TestDetailsDrawer = dynamic(
-    () => import('@/components/dashboard/component/test-details-drawer'),
-    { ssr: false }
-);
-
-// Types
-export type TestStatus = 'completed' | 'failed' | 'flaky' | 'skipped';
-type Environment = 'CI' | 'local';
-
-interface TestCase {
-    id: string;
-    name: string;
-    duration: string;
-    status: TestStatus;
-    error?: string;
-    steps?: {
-        name: string;
-        status: TestStatus;
-        duration: string;
-        screenshot?: string;
-    }[];
-}
-
-interface TestSuite {
-    id: string;
-    name: string;
-    duration: string;
-    status: TestStatus;
-    testCases: TestCase[];
-}
-
-interface TestRun {
-    id: string;
-    startTime: string;
-    duration: string;
-    status: TestStatus;
-    tags: string[];
-    environment: Environment;
-    gitBranch?: string;
-    gitCommit?: string;
-    browser?: string;
-    runBy?: string;
-    testSuites: TestSuite[];
-}
-
-interface StatusIndicator {
-    color: string;
-    bgColor: string;
-    icon: React.ReactNode;
-}
-
-// Mock data fetching function - in a real app, this would be an API call
-const fetchTestRun = (id: string): TestRun => {
-    // This is mock data - in a real app, you would fetch this from an API
-    const testRunsData: Record<string, TestRun> = {
-        'run-123': {
-            id: 'run-123',
-            startTime: '2023-06-10T14:30:00Z',
-            duration: '1m 32s',
-            status: 'completed',
-            tags: ['regression', 'main'],
-            environment: 'CI',
-            gitBranch: 'main',
-            gitCommit: 'abc123',
-            browser: 'Chrome',
-            runBy: 'CI Pipeline',
-            testSuites: [
-                {
-                    id: 'suite-1',
-                    name: 'Authentication Tests',
-                    duration: '35s',
-                    status: 'completed',
-                    testCases: [
-                        {
-                            id: 'test-1',
-                            name: 'Should login with valid credentials',
-                            duration: '12s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to login page', status: 'completed', duration: '2s' },
-                                { name: 'Enter username', status: 'completed', duration: '1s' },
-                                { name: 'Enter password', status: 'completed', duration: '1s' },
-                                { name: 'Click login button', status: 'completed', duration: '8s' },
-                            ]
-                        },
-                        {
-                            id: 'test-2',
-                            name: 'Should show error with invalid credentials',
-                            duration: '10s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to login page', status: 'completed', duration: '2s' },
-                                { name: 'Enter invalid username', status: 'completed', duration: '1s' },
-                                { name: 'Enter invalid password', status: 'completed', duration: '1s' },
-                                { name: 'Click login button', status: 'completed', duration: '6s' },
-                            ]
-                        },
-                        {
-                            id: 'test-3',
-                            name: 'Should logout completedfully',
-                            duration: '13s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Login to application', status: 'completed', duration: '6s' },
-                                { name: 'Click logout button', status: 'completed', duration: '7s' },
-                            ]
-                        },
-                    ],
-                },
-                {
-                    id: 'suite-2',
-                    name: 'Product Page Tests',
-                    duration: '57s',
-                    status: 'completed',
-                    testCases: [
-                        {
-                            id: 'test-4',
-                            name: 'Should display product details',
-                            duration: '15s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to product page', status: 'completed', duration: '5s' },
-                                { name: 'Verify product title', status: 'completed', duration: '5s' },
-                                { name: 'Verify product price', status: 'completed', duration: '5s' },
-                            ]
-                        },
-                        {
-                            id: 'test-5',
-                            name: 'Should add product to cart',
-                            duration: '22s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to product page', status: 'completed', duration: '5s' },
-                                { name: 'Click add to cart button', status: 'completed', duration: '8s' },
-                                { name: 'Verify cart updated', status: 'completed', duration: '9s' },
-                            ]
-                        },
-                        {
-                            id: 'test-6',
-                            name: 'Should update product quantity',
-                            duration: '20s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to cart page', status: 'completed', duration: '5s' },
-                                { name: 'Update product quantity', status: 'completed', duration: '8s' },
-                                { name: 'Verify cart total updated', status: 'completed', duration: '7s' },
-                            ]
-                        },
-                    ],
-                },
-            ],
-        },
-        'run-122': {
-            id: 'run-122',
-            startTime: '2023-06-09T10:15:00Z',
-            duration: '2m 05s',
-            status: 'failed',
-            tags: ['feature', 'checkout'],
-            environment: 'CI',
-            gitBranch: 'feature/checkout',
-            gitCommit: 'def456',
-            browser: 'Firefox',
-            runBy: 'CI Pipeline',
-            testSuites: [
-                {
-                    id: 'suite-3',
-                    name: 'Checkout Tests',
-                    duration: '1m 25s',
-                    status: 'failed',
-                    testCases: [
-                        {
-                            id: 'test-7',
-                            name: 'Should proceed to checkout',
-                            duration: '18s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to cart page', status: 'completed', duration: '5s' },
-                                { name: 'Click checkout button', status: 'completed', duration: '13s' },
-                            ]
-                        },
-                        {
-                            id: 'test-8',
-                            name: 'Should complete payment process',
-                            duration: '42s',
-                            status: 'failed',
-                            error: 'Payment gateway timeout after 30s',
-                            steps: [
-                                { name: 'Enter payment details', status: 'completed', duration: '10s' },
-                                { name: 'Submit payment form', status: 'failed', duration: '32s', screenshot: '/mock-screenshots/payment-error.jpg' },
-                            ]
-                        },
-                        {
-                            id: 'test-9',
-                            name: 'Should show order confirmation',
-                            duration: '25s',
-                            status: 'skipped',
-                            steps: []
-                        },
-                    ],
-                },
-                {
-                    id: 'suite-4',
-                    name: 'User Profile Tests',
-                    duration: '40s',
-                    status: 'completed',
-                    testCases: [
-                        {
-                            id: 'test-10',
-                            name: 'Should update user profile',
-                            duration: '22s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to profile page', status: 'completed', duration: '5s' },
-                                { name: 'Update profile information', status: 'completed', duration: '10s' },
-                                { name: 'Save profile', status: 'completed', duration: '7s' },
-                            ]
-                        },
-                        {
-                            id: 'test-11',
-                            name: 'Should change password',
-                            duration: '18s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to profile page', status: 'completed', duration: '5s' },
-                                { name: 'Enter new password', status: 'completed', duration: '5s' },
-                                { name: 'Confirm new password', status: 'completed', duration: '8s' },
-                            ]
-                        },
-                    ],
-                },
-            ],
-        },
-        'run-121': {
-            id: 'run-121',
-            startTime: '2023-06-08T16:45:00Z',
-            duration: '1m 58s',
-            status: 'flaky',
-            tags: ['smoke', 'critical'],
-            environment: 'local',
-            browser: 'Chrome',
-            runBy: 'John Developer',
-            testSuites: [
-                {
-                    id: 'suite-5',
-                    name: 'Critical Path Tests',
-                    duration: '1m 58s',
-                    status: 'flaky',
-                    testCases: [
-                        {
-                            id: 'test-12',
-                            name: 'Should load homepage',
-                            duration: '15s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Navigate to homepage', status: 'completed', duration: '15s' },
-                            ]
-                        },
-                        {
-                            id: 'test-13',
-                            name: 'Should navigate through main menu',
-                            duration: '23s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Click category menu', status: 'completed', duration: '8s' },
-                                { name: 'Verify sub-menu appears', status: 'completed', duration: '5s' },
-                                { name: 'Click sub-menu item', status: 'completed', duration: '10s' },
-                            ]
-                        },
-                        {
-                            id: 'test-14',
-                            name: 'Should search for products',
-                            duration: '40s',
-                            status: 'flaky',
-                            error: 'Test passed on retry',
-                            steps: [
-                                { name: 'Type in search box', status: 'completed', duration: '5s' },
-                                { name: 'Submit search', status: 'flaky', duration: '25s', screenshot: '/mock-screenshots/search-retry.jpg' },
-                                { name: 'Verify search results', status: 'completed', duration: '10s' },
-                            ]
-                        },
-                        {
-                            id: 'test-15',
-                            name: 'Should complete checkout process',
-                            duration: '40s',
-                            status: 'completed',
-                            steps: [
-                                { name: 'Add product to cart', status: 'completed', duration: '10s' },
-                                { name: 'Proceed to checkout', status: 'completed', duration: '12s' },
-                                { name: 'Complete payment', status: 'completed', duration: '18s' },
-                            ]
-                        },
-                    ],
-                },
-            ],
-        },
-    };
-
-    return testRunsData[id] || {
-        id,
-        startTime: new Date().toISOString(),
-        duration: 'N/A',
-        status: 'failed',
-        tags: ['unknown'],
-        environment: 'CI',
-        testSuites: [],
-    };
-};
-
-// Status indicators and styles - moved outside component to prevent re-creation on each render
-const statusIndicator: Record<TestStatus, StatusIndicator> = {
+// Status configuration for consistent styling
+const STATUS_CONFIG = {
     completed: {
-        color: 'text-green-500',
-        bgColor: 'bg-green-500',
-        icon: <CheckCircle className="h-4 w-4 text-green-500" />
+        icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
+        color: "bg-green-500"
     },
     failed: {
-        color: 'text-red-500',
-        bgColor: 'bg-red-500',
-        icon: <XCircle className="h-4 w-4 text-red-500" />
+        icon: <XCircle className="h-4 w-4 text-red-500" />,
+        color: "bg-red-500"
+    },
+    running: {
+        icon: <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />,
+        color: "bg-blue-500"
     },
     flaky: {
-        color: 'text-amber-500',
-        bgColor: 'bg-amber-500',
-        icon: <AlertTriangle className="h-4 w-4 text-amber-500" />
+        icon: <AlertTriangle className="h-4 w-4 text-amber-500" />,
+        color: "bg-amber-500"
     },
     skipped: {
-        color: 'text-gray-500',
-        bgColor: 'bg-gray-500',
-        icon: <Clock className="h-4 w-4 text-gray-500" />
-    },
-};
-
-// Helper functions
-const formatDateTime = (dateString: string) => {
-    try {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('default', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-        }).format(date);
-    } catch (e) {
-        console.error('Error formatting date:', e);
-        return dateString; // fallback if date parsing fails
+        icon: <AlertCircle className="h-4 w-4 text-slate-400" />,
+        color: "bg-slate-400"
     }
 };
 
-const getTotalCounts = (testRun: TestRun) => {
-    let total = 0;
-    let passed = 0;
-    let failed = 0;
-    let flaky = 0;
-    let skipped = 0;
-
-    testRun.testSuites.forEach(suite => {
-        suite.testCases.forEach(testCase => {
-            total++;
-            if (testCase.status === 'completed') passed++;
-            else if (testCase.status === 'failed') failed++;
-            else if (testCase.status === 'flaky') flaky++;
-            else if (testCase.status === 'skipped') skipped++;
-        });
-    });
-
-    return { total, passed, failed, flaky, skipped };
+// Helper function to format duration
+const formatDuration = (ms: number): string => {
+    if (!ms) return "N/A";
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(1);
+    return `${minutes > 0 ? `${minutes}m ` : ''}${seconds}s`;
 };
 
-export default function TestRunPage({ projectId }: { projectId: string }) {
-    const params = useParams();
-    const runId = typeof params?.test === 'string' ? params.test : '';
-
-    // State management
-    const [testRun, setTestRun] = useState<TestRun | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [expandedSuites, setExpandedSuites] = useState<string[]>([]);
-    const [selectedTestCase, setSelectedTestCase] = useState<TestCase | null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    const [isClient, setIsClient] = useState(false);
-
-    // Handle client-side only code
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
-
-    // Fetch test run data
-    useEffect(() => {
-        if (!runId) return;
-
-        try {
-            const data = fetchTestRun(runId);
-            setTestRun(data);
-            // Initialize expanded suites state once we have the data
-            setExpandedSuites(data.testSuites.map(suite => suite.id));
-        } catch (error) {
-            console.error('Error fetching test run:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, [runId]);
-
-    // UI interaction handlers
-    const toggleSuiteExpansion = (suiteId: string) => {
-        setExpandedSuites(prev =>
-            prev.includes(suiteId)
-                ? prev.filter(id => id !== suiteId)
-                : [...prev, suiteId]
-        );
-    };
-
-    // Convert TestCase to TestDetails format for the drawer
-    const mapTestCaseToTestDetails = (testCase: TestCase) => {
-        if (!testRun) return null;
-
-        const testError = testCase.error ? {
-            message: testCase.error,
-            stack: '',
-            screenshot: testCase.steps?.find(step => step.screenshot)?.screenshot
-        } : undefined;
-
-        return {
-            id: testCase.id,
-            name: testCase.name,
-            module: testRun.testSuites.find(suite =>
-                suite.testCases.some(tc => tc.id === testCase.id)
-            )?.name || '',
-            failureType: testCase.status === 'failed' ? 'Bug' :
-                testCase.status === 'flaky' ? 'Flaky' :
-                    testCase.status === 'skipped' ? 'UI Change' : '',
-            failureRate: '25%', // This would come from actual data in a real app
-            priority: 'Medium', // This would be determined by logic in a real app
-            lastRun: testRun.startTime ? formatDateTime(testRun.startTime) : '',
-            duration: testCase.duration,
-            error: testError,
-            history: [
-                // Mock history data - in a real app, this would come from an API
-                { date: formatDateTime(testRun.startTime || ''), status: testCase.status === 'completed' ? 'Pass' : 'Fail' },
-                { date: '1 day ago', status: 'Pass' },
-                { date: '3 days ago', status: 'Pass' },
-                { date: '1 week ago', status: 'Fail' },
-            ]
-        };
-    };
-
-    const handleTestCaseClick = (testCase: TestCase) => {
-        setSelectedTestCase(testCase);
-        setDrawerOpen(true);
-    };
-
-    // Loading state
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="flex flex-col items-center gap-2">
-                    <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-                    <p>Loading test run details...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // Error state
-    if (!testRun) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="flex flex-col items-center gap-2">
-                    <XCircle className="h-8 w-8 text-red-500" />
-                    <p>Test run not found</p>
-                    <Button asChild>
-                        <Link href="/dashboard">Back to Dashboard</Link>
-                    </Button>
-                </div>
-            </div>
-        );
-    }
-
-    const counts = getTotalCounts(testRun);
-
-    const breadcrumbLinks = [
-        { label: "Home", href: `/projects/${projectId}`, icon: <HomeIcon size={16} /> },
-        { label: "Projects", href: `/projects/${projectId}/tests`, icon: <FolderKanban size={16} /> },
-        { label: "Test Run", icon: <PlayCircle size={16} /> },
-    ];
+// Component to render the progress bar
+const TestProgressBar = ({ stats }) => {
+    if (!stats || !stats.total) return null;
 
     return (
-        <div className="p-4 space-y-6">
-            <div className="flex flex-col space-y-1.5">
+        <div className="bg-white rounded-lg border p-4">
+            <div className="w-full h-8 bg-gray-100 rounded-full overflow-hidden flex">
+                {stats.passed > 0 && (
+                    <div
+                        className="bg-green-500 h-full"
+                        style={{ width: `${(stats.passed / stats.total) * 100}%` }}
+                    />
+                )}
+                {stats.failed > 0 && (
+                    <div
+                        className="bg-red-500 h-full"
+                        style={{ width: `${(stats.failed / stats.total) * 100}%` }}
+                    />
+                )}
+                {stats.flaky > 0 && (
+                    <div
+                        className="bg-amber-500 h-full"
+                        style={{ width: `${(stats.flaky / stats.total) * 100}%` }}
+                    />
+                )}
+                {stats.skipped > 0 && (
+                    <div
+                        className="bg-slate-400 h-full"
+                        style={{ width: `${(stats.skipped / stats.total) * 100}%` }}
+                    />
+                )}
+            </div>
+
+            <div className="flex justify-between mt-4">
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                    <span className="text-xs">Passed: {stats.passed}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <span className="text-xs">Failed: {stats.failed}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-amber-500" />
+                    <span className="text-xs">Flaky: {stats.flaky}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded-full bg-slate-400" />
+                    <span className="text-xs">Skipped: {stats.skipped}</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Component to render the stats cards
+const TestStatsCards = ({ stats }) => {
+    if (!stats) return null;
+
+    return (
+        <div className="grid grid-cols-5 gap-4">
+            <div className="bg-white rounded-lg border p-4 flex flex-col">
+                <span className="text-sm text-muted-foreground">Total Tests</span>
+                <span className="text-2xl font-bold">{stats.total}</span>
+            </div>
+            <div className="bg-white rounded-lg border p-4 flex flex-col">
+                <span className="text-sm text-muted-foreground">Passed</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-green-600">{stats.passed}</span>
+                    {STATUS_CONFIG.completed.icon}
+                </div>
+            </div>
+            <div className="bg-white rounded-lg border p-4 flex flex-col">
+                <span className="text-sm text-muted-foreground">Failed</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-red-600">{stats.failed}</span>
+                    {STATUS_CONFIG.failed.icon}
+                </div>
+            </div>
+            <div className="bg-white rounded-lg border p-4 flex flex-col">
+                <span className="text-sm text-muted-foreground">Flaky</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-amber-600">{stats.flaky}</span>
+                    {STATUS_CONFIG.flaky.icon}
+                </div>
+            </div>
+            <div className="bg-white rounded-lg border p-4 flex flex-col">
+                <span className="text-sm text-muted-foreground">Skipped</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-2xl font-bold text-slate-600">{stats.skipped}</span>
+                    {STATUS_CONFIG.skipped.icon}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Timeline view component
+const TestTimeline = ({ testSuites }) => {
+    if (!testSuites || testSuites.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-32">
+                <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-4">
+            <h2 className="text-lg font-semibold">Test Run Timeline</h2>
+            <div className="bg-white rounded-lg border p-4">
+                <div className="flex flex-col gap-4">
+                    {testSuites.map((suite: TestSuite) => (
+                        <div key={suite._id} className="relative pl-6 pb-4 border-l-2 border-gray-200">
+                            <div className="absolute left-[-8px] top-0 w-4 h-4 rounded-full bg-primary" />
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="font-medium">{suite.name}</h4>
+                                    <span className="text-xs text-muted-foreground">
+                                        {formatDuration(suite.duration || 0)}
+                                    </span>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                    {suite.testStats.total} tests - {suite.testStats.passed} passed,{' '}
+                                    {suite.testStats.failed} failed
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// System info component
+const SystemInfo = ({ stats }: { stats: any }) => {
+    if (!stats?.system) return null;
+
+    const renderInfoField = (label: string, value: string) => (
+        <div className="flex flex-col">
+            <span className="text-xs text-muted-foreground">{label}</span>
+            <span className="text-sm truncate">{value}</span>
+        </div>
+    );
+
+    const renderCIMetadata = () => {
+        if (!stats.ci || !stats.metadata) return null;
+
+        return (
+            <>
+                {renderInfoField('Branch', stats.metadata.branchName)}
+                {renderInfoField('Commit', stats.metadata.commitHash.slice(0, 7))}
+                {renderInfoField('Author', stats.metadata.commitAuthor)}
+                <div className="flex flex-col col-span-3">
+                    {renderInfoField('Message', stats.metadata.commitMessage)}
+                </div>
+            </>
+        );
+    };
+
+    return (
+        <div className="bg-white rounded-lg border p-4">
+            <h3 className="font-medium mb-3 flex items-center gap-2">
+                {stats.ci ? (
+                    <GitBranch className="h-4 w-4 text-primary" />
+                ) : (
+                    <Computer className="h-4 w-4 text-primary" />
+                )}
+                {stats.ci ? 'CI Environment' : 'Local Environment'}
+            </h3>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {renderCIMetadata()}
+                {renderInfoField('OS', stats.system.os)}
+                {renderInfoField('CPU', stats.system.cpu)}
+                {renderInfoField('Memory', stats.system.memory)}
+                {renderInfoField('Node.js', stats.system.nodejs)}
+                {renderInfoField('Playwright', stats.system.playwright)}
+                {renderInfoField('Browser', `${stats.system.browser} ${stats.system.browserVersion}`)}
+            </div>
+        </div>
+    );
+};
+
+// Loading state component
+const LoadingState = ({ breadcrumbLinks }) => (
+    <div className="mx-10 py-6">
+        <div className="mb-4">
+            <BreadcrumbNav links={breadcrumbLinks} />
+        </div>
+        <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-2">
+                <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">Loading test run data...</p>
+            </div>
+        </div>
+    </div>
+);
+
+// Error state component
+const ErrorState = ({ breadcrumbLinks, error }) => (
+    <div className="mx-10 py-6">
+        <div className="mb-4">
+            <BreadcrumbNav links={breadcrumbLinks} />
+        </div>
+        <div className="flex items-center justify-center h-64">
+            <div className="flex flex-col items-center gap-2">
+                <AlertCircle className="h-8 w-8 text-red-500" />
+                <p className="text-red-500 font-medium">Error loading test run</p>
+                <p className="text-muted-foreground">{error}</p>
+            </div>
+        </div>
+    </div>
+);
+
+// Main TestRunPage component
+export default function TestRunPage({ projectId }: { projectId: string }) {
+    const params = useParams();
+    const runId = (params?.test as string) || '';
+    const [activeTab, setActiveTab] = useState<'suites' | 'timeline'>('suites');
+    const { stats, testSuites, loading, error } = useTestDetail(runId);
+
+    // Breadcrumb links
+    const breadcrumbLinks = [
+        { label: "Home", href: "/", icon: <HomeIcon className="h-3.5 w-3.5" /> },
+        { label: `All Tests`, href: `/projects/${projectId}/tests` },
+        { label: `Run ${runId.slice(0, 6)}` }
+    ];
+
+    // Handle loading and error states
+    if (loading) return <LoadingState breadcrumbLinks={breadcrumbLinks} />;
+    if (error) return <ErrorState breadcrumbLinks={breadcrumbLinks} error={error} />;
+
+    return (
+        <div className="mx-10 py-6">
+            <div className="mb-4">
                 <BreadcrumbNav links={breadcrumbLinks} />
             </div>
 
-            {/* Test Run Header */}
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <CardTitle className="text-2xl flex items-center gap-2">
-                                Test Run: {testRun.id}
-                                <Badge
-                                    className={`ml-2 capitalize ${statusIndicator[testRun.status].color}`}
-                                >
-                                    {testRun.status}
-                                </Badge>
-                            </CardTitle>
-                            <CardDescription>
-                                {isClient ? (
-                                    <>Started at {formatDateTime(testRun.startTime)} • Duration: {testRun.duration}</>
-                                ) : (
-                                    <>Started at {testRun.startTime} • Duration: {testRun.duration}</>
-                                )}
-                            </CardDescription>
-                        </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
-                                <Download className="h-4 w-4 mr-1" />
-                                Export
-                            </Button>
-                            <Button variant="outline" size="sm">
-                                <PlayCircle className="h-4 w-4 mr-1" />
-                                Re-run
-                            </Button>
+            <div className="flex flex-col gap-3">
+                {/* Header with summary info */}
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-2xl font-bold">Test Run Details</h1>
+                        <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs text-white ${STATUS_CONFIG[stats?.status]?.color || 'bg-slate-400'}`}>
+                                {stats?.status}
+                            </span>
+                            <span className="text-sm text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-4 w-4" />
+                                {formatDuration(stats?.totalDuration || 0)}
+                            </span>
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="flex flex-col border rounded-md p-3">
-                            <span className="text-sm text-muted-foreground">Environment</span>
-                            <div className="flex items-center gap-1 mt-1">
-                                {testRun.environment === 'CI' ? (
-                                    <GitBranch className="h-4 w-4" />
-                                ) : (
-                                    <Terminal className="h-4 w-4" />
-                                )}
-                                <span className="font-medium">{testRun.environment}</span>
-                            </div>
-                        </div>
-                        {testRun.gitBranch && (
-                            <div className="flex flex-col border rounded-md p-3">
-                                <span className="text-sm text-muted-foreground">Git Branch</span>
-                                <div className="flex items-center gap-1 mt-1">
-                                    <GitBranch className="h-4 w-4" />
-                                    <span className="font-medium">{testRun.gitBranch}</span>
-                                </div>
-                            </div>
-                        )}
-                        {testRun.browser && (
-                            <div className="flex flex-col border rounded-md p-3">
-                                <span className="text-sm text-muted-foreground">Browser</span>
-                                <div className="flex items-center gap-1 mt-1">
-                                    <ExternalLink className="h-4 w-4" />
-                                    <span className="font-medium">{testRun.browser}</span>
-                                </div>
-                            </div>
-                        )}
-                        {testRun.runBy && (
-                            <div className="flex flex-col border rounded-md p-3">
-                                <span className="text-sm text-muted-foreground">Run By</span>
-                                <div className="flex items-center gap-1 mt-1">
-                                    <Info className="h-4 w-4" />
-                                    <span className="font-medium">{testRun.runBy}</span>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                        Id: {runId}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        Started: {stats?.startTime ? new Date(stats.startTime).toLocaleString() : 'N/A'}
+                        {stats?.endTime && ` • Ended: ${new Date(stats.endTime).toLocaleString()}`}
+                    </p>
+                </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        {testRun.tags.map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                                {tag}
-                            </Badge>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+                {/* System information */}
+                <SystemInfo stats={stats} />
 
-            {/* Test Summary */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Test Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-5 gap-4 text-center">
-                        <div className="flex flex-col items-center">
-                            <span className="text-2xl font-bold">{counts.total}</span>
-                            <span className="text-sm text-muted-foreground">Total</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-2xl font-bold text-green-500">{counts.passed}</span>
-                            <span className="text-sm text-muted-foreground">Passed</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-2xl font-bold text-red-500">{counts.failed}</span>
-                            <span className="text-sm text-muted-foreground">Failed</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-2xl font-bold text-amber-500">{counts.flaky}</span>
-                            <span className="text-sm text-muted-foreground">Flaky</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-2xl font-bold text-gray-500">{counts.skipped}</span>
-                            <span className="text-sm text-muted-foreground">Skipped</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                {/* Stats cards */}
+                <TestStatsCards stats={stats} />
 
-            {/* Test Suites & Cases */}
-            {isClient && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Test Suites</CardTitle>
-                        <CardDescription>
-                            {testRun.testSuites.length} suites, {counts.total} test cases
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {testRun.testSuites.map((suite) => (
-                                <div key={suite.id} className="border rounded-md">
-                                    <div
-                                        className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50"
-                                        onClick={() => toggleSuiteExpansion(suite.id)}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            {expandedSuites.includes(suite.id) ? (
-                                                <ChevronDown className="h-4 w-4" />
+                <div className="flex flex-col gap-4">
+                    {/* Summary stats visualization */}
+                    <TestProgressBar stats={stats} />
+                </div>
+
+                {/* Tabs */}
+                <div className="border-b">
+                    <div className="flex gap-3">
+                        <button
+                            className={`pb-2 text-sm font-medium ${activeTab === 'suites'
+                                ? 'border-b-2 border-primary text-primary'
+                                : 'text-muted-foreground'
+                                }`}
+                            onClick={() => setActiveTab('suites')}
+                        >
+                            Test Suites ({testSuites?.length || 0})
+                        </button>
+                        <button
+                            className={`pb-2 text-sm font-medium ${activeTab === 'timeline'
+                                ? 'border-b-2 border-primary text-primary'
+                                : 'text-muted-foreground'
+                                }`}
+                            onClick={() => setActiveTab('timeline')}
+                        >
+                            Timeline
+                        </button>
+                    </div>
+                </div>
+
+                {/* Tab content */}
+                <div className="flex gap-4">
+                    {/* Main content */}
+                    <div className="flex-1">
+                        {activeTab === 'suites' ? (
+                            <div className="flex flex-col gap-4">
+                                <div className="w-full rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-[400px]">Test Suite</TableHead>
+                                                <TableHead>Status</TableHead>
+                                                <TableHead className="text-right">Duration</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {testSuites && testSuites.length > 0 ? (
+                                                testSuites.map((suite, index) => (
+                                                    <TestSuiteItem
+                                                        key={suite._id || index}
+                                                        suite={suite}
+                                                    />
+                                                ))
                                             ) : (
-                                                <ChevronRight className="h-4 w-4" />
+                                                <TableRow>
+                                                    <TableCell colSpan={3} className="text-center py-8">
+                                                        <p className="text-muted-foreground">No test suites found for this run.</p>
+                                                    </TableCell>
+                                                </TableRow>
                                             )}
-                                            <div className="font-medium">{suite.name}</div>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className={`h-2 w-2 rounded-full ${statusIndicator[suite.status].bgColor}`}></div>
-                                                <span className="text-sm capitalize">{suite.status}</span>
-                                            </div>
-                                            <div className="text-sm text-muted-foreground">
-                                                {suite.duration}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {expandedSuites.includes(suite.id) && (
-                                        <div className="border-t p-3">
-                                            <div className="border rounded-md">
-                                                <div className="grid grid-cols-3 bg-muted/50 p-2">
-                                                    <div className="font-medium text-sm">Test Case</div>
-                                                    <div className="font-medium text-sm">Duration</div>
-                                                    <div className="font-medium text-sm">Status</div>
-                                                </div>
-                                                {suite.testCases.map((testCase) => (
-                                                    <div
-                                                        key={testCase.id}
-                                                        className="grid grid-cols-3 p-2 border-t hover:bg-muted/30 cursor-pointer"
-                                                        onClick={() => handleTestCaseClick(testCase)}
-                                                    >
-                                                        <div>{testCase.name}</div>
-                                                        <div>{testCase.duration}</div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            {statusIndicator[testCase.status].icon}
-                                                            <span className="text-sm capitalize">
-                                                                {testCase.status}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+                                        </TableBody>
+                                    </Table>
                                 </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Test Details Drawer - Only render when drawer is open and we're on the client */}
-            {isClient && selectedTestCase && drawerOpen && (
-                <TestDetailsDrawer
-                    isOpen={drawerOpen}
-                    onClose={() => setDrawerOpen(false)}
-                    test={mapTestCaseToTestDetails(selectedTestCase)}
-                />
-            )}
+                            </div>
+                        ) : (
+                            <TestTimeline testSuites={testSuites} />
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
