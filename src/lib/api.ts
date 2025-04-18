@@ -35,4 +35,9 @@ export const API_ENDPOINTS = {
         getTestRunById: (testRunId: string) => `/test-runs/${testRunId}`,
         getByProjectId: (projectId: string) => `/projects/${projectId}/test-runs`,
     },
+    insights: {
+        getByProjectId: (projectId: string) => `/projects/${projectId}/insights`,
+        getInsightDetails: (insightId: string) => `/insights/${insightId}`,
+        updateInsightStatus: (insightId: string) => `/insights/${insightId}/status`,
+    }
 }

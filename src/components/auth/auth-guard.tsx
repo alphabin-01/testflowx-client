@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from './auth-context'
-
+import { Loader } from '../ui/loader'
 // Routes that authenticated users shouldn't access (login/signup pages)
 const authRoutes = ['/sign-in', '/sign-up']
 
@@ -49,7 +49,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+                <Loader />
             </div>
         )
     }

@@ -63,29 +63,11 @@ export function AppSidebar({
     // Define tests links
     const testsLinks = [
         {
-            title: "All Tests",
+            title: "Latest Runs",
             href: `/projects/${projectId}/tests`,
-            icon: <IconList className="h-4 w-4" />,
-            variant: "default" as const,
-        },
-        {
-            title: "Failures",
-            href: `/projects/${projectId}/failures`,
-            icon: <IconMoodSad className="h-4 w-4" />,
-            variant: "default" as const,
-        },
-        {
-            title: "Flaky Tests",
-            href: `/projects/${projectId}/flaky-tests`,
-            icon: <IconFlask className="h-4 w-4" />,
-            variant: "default" as const,
-        },
-        {
-            title: "History",
-            href: `/projects/${projectId}/history`,
             icon: <IconHistory className="h-4 w-4" />,
             variant: "default" as const,
-        },
+        }
     ];
 
     const othersLinks = [

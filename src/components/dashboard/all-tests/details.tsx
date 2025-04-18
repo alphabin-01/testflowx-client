@@ -25,6 +25,8 @@ import { useState } from "react";
 import BreadcrumbNav from "../component/breadcumb";
 import TestSuiteItem from "./item";
 import { TestSuite } from "@/lib/typers";
+import { Badge } from "@/components/ui/badge";
+import { Loader } from "@/components/ui/loader";
 
 // Status configuration for consistent styling
 const STATUS_CONFIG = {
@@ -252,7 +254,7 @@ const LoadingState = ({ breadcrumbLinks }) => (
         </div>
         <div className="flex items-center justify-center h-64">
             <div className="flex flex-col items-center gap-2">
-                <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                <Loader />
                 <p className="text-muted-foreground">Loading test run data...</p>
             </div>
         </div>
@@ -282,22 +284,9 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
     const [activeTab, setActiveTab] = useState<'suites' | 'timeline'>('suites');
     const { stats, testSuites, loading, error } = useTestDetail(runId);
 
-    // Breadcrumb links
-    const breadcrumbLinks = [
-        { label: "Home", href: "/", icon: <HomeIcon className="h-3.5 w-3.5" /> },
-        { label: `All Tests`, href: `/projects/${projectId}/tests` },
-        { label: `Run ${runId.slice(0, 6)}` }
-    ];
-
-    // Handle loading and error states
-    if (loading) return <LoadingState breadcrumbLinks={breadcrumbLinks} />;
-    if (error) return <ErrorState breadcrumbLinks={breadcrumbLinks} error={error} />;
 
     return (
         <div className="mx-10 py-6">
-            <div className="mb-4">
-                <BreadcrumbNav links={breadcrumbLinks} />
-            </div>
 
             <div className="flex flex-col gap-3">
                 {/* Header with summary info */}
@@ -305,9 +294,9 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold">Test Run Details</h1>
                         <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 rounded-full text-xs text-white ${STATUS_CONFIG[stats?.status]?.color || 'bg-slate-400'}`}>
+                            <Badge variant="outline" >
                                 {stats?.status}
-                            </span>
+                            </Badge>
                             <span className="text-sm text-muted-foreground flex items-center gap-1">
                                 <Clock className="h-4 w-4" />
                                 {formatDuration(stats?.totalDuration || 0)}

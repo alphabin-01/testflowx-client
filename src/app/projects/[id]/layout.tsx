@@ -2,6 +2,7 @@
 
 import DashboardLayout from "@/app/dashboard-layout";
 import { useProject } from "@/contexts/project-context";
+import { Loader } from "@/components/ui/loader";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -24,7 +25,9 @@ export default function ProjectLayout({
     if (loading) {
         return (
             <DashboardLayout>
-                <div className="p-8 text-center">Loading project data...</div>
+                <div className="flex justify-center items-center h-screen">
+                    <Loader />
+                </div>
             </DashboardLayout>
         );
     }

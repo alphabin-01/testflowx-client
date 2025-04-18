@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ToastProvider from "@/components/ToastProvider";
-import { DashboardProvider } from "@/contexts/dashboard-context";
 import { AuthProvider } from "@/components/auth/auth-context";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { ProjectProvider } from "@/contexts/project-context";
@@ -36,15 +35,13 @@ export default function RootLayout({
       >
         <AuthProvider>
           <ToastProvider />
-          <DashboardProvider>
-            <ProjectProvider>
-              <ApiKeyProvider>
-                <AuthGuard>
-                  {children}
-                </AuthGuard>
-              </ApiKeyProvider>
-            </ProjectProvider>
-          </DashboardProvider>
+          <ProjectProvider>
+            <ApiKeyProvider>
+              <AuthGuard>
+                {children}
+              </AuthGuard>
+            </ApiKeyProvider>
+          </ProjectProvider>
         </AuthProvider>
       </body>
     </html>

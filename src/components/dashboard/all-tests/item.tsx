@@ -5,7 +5,7 @@ import { apiRequest, STATUS } from '@/lib/api-client';
 import { TestCase, TestSuite } from '@/lib/typers';
 import { CheckCircle, Clock, XCircle, AlertCircle, SkipForward } from 'lucide-react';
 import TestDetailsDrawer from '../component/test-details-drawer';
-
+import { Loader } from '@/components/ui/loader';
 // Helper function to format duration
 const formatDuration = (ms: number): string => {
     if (!ms) return "N/A";
@@ -142,6 +142,7 @@ const TestSuiteItem = ({ suite }: TestSuiteItemProps) => {
         if (loading) {
             return (
                 <div className="py-4 text-center text-muted-foreground">
+                    <Loader />
                     Loading test cases...
                 </div>
             );

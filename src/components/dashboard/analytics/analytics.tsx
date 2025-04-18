@@ -63,6 +63,13 @@ interface Metrics {
         maxDuration: number;
         _id?: string;
     }>;
+    topFailingTests: Array<{
+        testId: string;
+        title: string;
+        failureRate: number;
+        occurrences: number;
+        _id?: string;
+    }>;
     ci?: {
         avgBuildTime: number;
         passRate: number;
@@ -330,7 +337,7 @@ function TestSummaryBarChart({ summary }: { summary: Metrics['summary'] }) {
     ];
 
     return (
-        <Card className="shadow-xl rounded-2xl border border-gray-200 w-full md:w-[50%]">
+        <Card className="rounded-2xl border border-gray-200 w-full">
             <CardHeader className="border-b pb-4">
                 <CardTitle className="text-xl font-semibold text-gray-800">
                     Test Summary
@@ -414,7 +421,7 @@ function TrendsAreaChart({ trends }: { trends: Metrics['trends'] }) {
 
 
     return (
-        <Card className="shadow-lg rounded-xl border border-gray-200 w-full">
+        <Card className="rounded-xl border border-gray-200 w-full" >
             <CardHeader className="border-b pb-4">
                 <CardTitle className="text-xl font-semibold text-gray-800">
                     Test Metrics Trends
@@ -453,6 +460,7 @@ function TrendsAreaChart({ trends }: { trends: Metrics['trends'] }) {
                                         yAxisId="testCount"
                                         orientation="right"
                                         tick={{ fontSize: 12, fill: '#2563eb' }}
+
                                         label={{ value: 'Test Count', angle: 90, position: 'insideRight', fill: '#2563eb', fontSize: 12 }}
                                     />
                                     <YAxis
@@ -507,8 +515,8 @@ function TrendsAreaChart({ trends }: { trends: Metrics['trends'] }) {
                     </TabsContent>
 
                     <TabsContent value="passRate" className="mt-2">
-                        <div className="h-[24rem]">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-[24rem]" >
+                            <ResponsiveContainer width="100%" height="100%" >
                                 <AreaChart
                                     data={trendData}
                                     margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
@@ -603,6 +611,52 @@ function TrendsAreaChart({ trends }: { trends: Metrics['trends'] }) {
     );
 }
 
+// Component for top failing tests table
+function TopFailingTestsTable({ testData }: {
+    testData: Array<{
+        testId: string;
+        title: string;
+        failureRate: number;
+        occurrences: number;
+        _id?: string;
+    }>
+}) {
+    return (
+        <Card>
+            <CardHeader className="border-b pb-2">
+                <CardTitle className="text-xl">Top Failing Tests</CardTitle>
+                <CardDescription>Tests with the highest failure rates</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div className="w-full overflow-auto">
+                    <table className="w-full caption-bottom text-sm">
+                        <thead>
+                            <tr className="bg-muted/50">
+                                <th className="px-4 py-2 text-left font-semibold">Test</th>
+                                <th className="px-4 py-2 text-left font-semibold">Failure Rate</th>
+                                <th className="px-4 py-2 text-left font-semibold">Occurrences</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {testData.map((test, index) => (
+                                <tr
+                                    key={test.testId}
+                                    className={`${index < testData.length - 1 ? 'border-b' : ''} transition-colors hover:bg-muted/50`}
+                                >
+                                    <td className="p-3 font-medium">{test.title}</td>
+                                    <td className="p-3 font-medium text-red-600">
+                                        {test.failureRate}%
+                                    </td>
+                                    <td className="p-3">{test.occurrences}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 
 // Main component that brings everything together
 export function AnalyticsContent({ projectId }: { projectId: string }) {
@@ -681,7 +735,7 @@ export function AnalyticsContent({ projectId }: { projectId: string }) {
     return (
         <div className="space-y-8">
             {/* Metric Cards */}
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 {metricCardsData.map((metric) => (
                     <MetricCard
                         key={metric.title}
@@ -695,23 +749,30 @@ export function AnalyticsContent({ projectId }: { projectId: string }) {
                 ))}
             </div>
 
-
-            <div className="flex gap-3 w-full">
+            <div className="flex flex-col lg:flex-row gap-3 w-full">
                 {/* New Charts Section with Summary Bar Chart */}
-                <TestSummaryBarChart summary={metrics.summary} />
+                <div className="w-full lg:w-1/3">
+                    <TestSummaryBarChart summary={metrics.summary} />
+                </div>
                 {/* Trends Area Chart */}
                 {metrics.trends.passRate.length > 0 && (
-                    <TrendsAreaChart trends={metrics.trends} />
+                    <div className="w-full lg:w-2/3">
+                        <TrendsAreaChart trends={metrics.trends} />
+                    </div>
                 )}
             </div>
-
 
             {/* Tables Section */}
             {metrics.topSlowestTests.length > 0 && (
                 <ModuleTestPerformanceTable testData={metrics.topSlowestTests} />
             )}
+
+            {metrics.topFailingTests && metrics.topFailingTests.length > 0 && (
+                <TopFailingTestsTable testData={metrics.topFailingTests} />
+            )}
+
             {/* Additional Data Tables */}
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
                 {metrics.environments && metrics.environments.length > 0 && (
                     <EnvironmentsTable environments={metrics.environments} />
                 )}
