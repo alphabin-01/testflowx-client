@@ -43,7 +43,9 @@ import {
     XCircle,
     CheckCircle,
     AlertTriangle,
-    Tag
+    Tag,
+    CalendarRange,
+    Filter,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -69,106 +71,220 @@ const statusConfig = {
     }
 };
 
+// Time range options for filtering
+const TIME_RANGES = [
+    'Last 3 Months',
+    'Last Month',
+    'Last Week',
+    'Last 24 Hours',
+    'Custom Range'
+];
+
 const TestContent = ({ projectId }: { projectId: string }) => {
     const router = useRouter();
-    const { testRuns, isLoading, error, fetchTestRuns, pagination, getFilteredRuns } = useTestRun();
+    const { 
+        testRuns, 
+        isLoading, 
+        error, 
+        pagination, 
+        filters,
+        applyFilters,
+        fetchTestRuns,
+        goToPage
+    } = useTestRun();
+    
     const [selectedTest, setSelectedTest] = useState<TestCase | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    // Filter states
-    const [statusFilter, setStatusFilter] = useState('All');
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
- 
-    // Memoize the filtered runs
-    const filteredRuns = useMemo(() =>
-        getFilteredRuns(statusFilter, searchTerm, selectedTags),
-        [getFilteredRuns, statusFilter, searchTerm, selectedTags]);
+    const [localSearchTerm, setLocalSearchTerm] = useState('');
+    
+    // Local filter states for UI
+    const [branchOptions, setBranchOptions] = useState<string[]>([]);
+    const [availableTags, setAvailableTags] = useState<string[]>([]);
+    
+    // Track if the filters have been applied and API request is pending
+    const [filtersChanged, setFiltersChanged] = useState(false);
 
-    // Combine both useEffect hooks into one with proper dependency tracking
+    // Initialize local search term from filters - but only once
+    useEffect(() => {
+        setLocalSearchTerm(filters.searchTerm || '');
+    }, []);  // Empty dependency array means this runs only once
+
+    // Extract unique branches and tags from data
+    useEffect(() => {
+        if (testRuns.length > 0) {
+            // Extract unique branches
+            const branches = new Set<string>();
+            testRuns.forEach(run => {
+                if (run.ci && run.metadata?.branchName) {
+                    branches.add(run.metadata.branchName);
+                }
+            });
+            setBranchOptions(Array.from(branches));
+
+            // Extract unique tags
+            const tags = new Set<string>();
+            testRuns.forEach(run => {
+                run.tags.forEach(tag => tags.add(tag));
+            });
+            setAvailableTags(Array.from(tags));
+        }
+    }, [testRuns]);  // Only depend on testRuns
+
+    // Apply search term filter with debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (localSearchTerm !== filters.searchTerm) {
+                applyFilters({ searchTerm: localSearchTerm });
+                setFiltersChanged(true);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [localSearchTerm, filters.searchTerm, applyFilters]);
+
+    // Reset filter changes indicator when loading completes
     useEffect(() => {
         if (!isLoading) {
-            // Perform the fetch after a small delay to batch multiple state updates
-            const fetchTimeout = setTimeout(() => {
-                fetchTestRuns(pagination.page, pagination.limit, statusFilter);
-            }, 10);
-
-            return () => clearTimeout(fetchTimeout);
+            setFiltersChanged(false);
         }
-    }, [fetchTestRuns, statusFilter, pagination.page, pagination.limit, isLoading]);
+    }, [isLoading]);
 
-    // Memoize frequently used callbacks to prevent unnecessary re-renders
+    // Format date/time in a consistent way
     const formatDateTime = useCallback((dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleString();
     }, []);
 
+    // Navigate to run details page
     const navigateToRunDetails = useCallback((runId: string) => {
         router.push(`/projects/${projectId}/test-run/${runId}`);
     }, [projectId, router]);
 
-    const handleRefreshClick = useCallback(() => {
-        fetchTestRuns(pagination.page, pagination.limit, statusFilter);
-    }, [fetchTestRuns, pagination.page, pagination.limit, statusFilter]);
+    // Handle filter changes - these now trigger API requests
+    const handleStatusChange = useCallback((status: string) => {
+        applyFilters({ status });
+        setFiltersChanged(true);
+    }, [applyFilters]);
 
-    const handlePreviousPage = useCallback(() => {
-        fetchTestRuns(pagination.page - 1, pagination.limit, statusFilter);
-    }, [fetchTestRuns, pagination.page, pagination.limit, statusFilter]);
+    const handleBranchChange = useCallback((branch: string) => {
+        applyFilters({ branch: branch === 'all' ? '' : branch });
+        setFiltersChanged(true);
+    }, [applyFilters]);
 
-    const handleNextPage = useCallback(() => {
-        fetchTestRuns(pagination.page + 1, pagination.limit, statusFilter);
-    }, [fetchTestRuns, pagination.page, pagination.limit, statusFilter]);
+    const handleTimeRangeChange = useCallback((timeRange: string) => {
+        applyFilters({ timeRange });
+        setFiltersChanged(true);
+    }, [applyFilters]);
 
     const toggleTag = useCallback((tag: string) => {
-        setSelectedTags(prevTags =>
-            prevTags.includes(tag)
-                ? prevTags.filter(t => t !== tag)
-                : [...prevTags, tag]
-        );
-    }, []);
+        applyFilters({ 
+            tags: filters.tags?.includes(tag)
+                ? filters.tags.filter(t => t !== tag)
+                : [...(filters.tags || []), tag]
+        });
+        setFiltersChanged(true);
+    }, [applyFilters, filters.tags]);
 
     const clearAllTags = useCallback(() => {
-        setSelectedTags([]);
-    }, []);
+        applyFilters({ tags: [] });
+        setFiltersChanged(true);
+    }, [applyFilters]);
 
-    // Memoize computed values to avoid recalculation on each render
-    const uniqueStatuses = useMemo(() => {
-        const statuses = new Set(['All']);
-        testRuns.forEach(run => {
-            if (run.status) statuses.add(run.status);
+    const clearAllFilters = useCallback(() => {
+        setLocalSearchTerm('');
+        applyFilters({
+            status: 'All',
+            branch: '',
+            tags: [],
+            timeRange: 'Last 3 Months',
+            searchTerm: ''
         });
-        return Array.from(statuses);
-    }, [testRuns]);
+        setFiltersChanged(true);
+    }, [applyFilters]);
 
-    const allAvailableTags = useMemo(() => {
-        const tags = new Set<string>();
-        testRuns.forEach(run => {
-            run.tags.forEach(tag => tags.add(tag));
-        });
-        return Array.from(tags);
-    }, [testRuns]);
+    const handleRefreshClick = useCallback(() => {
+        fetchTestRuns(pagination.page, pagination.limit, filters, true);
+        setFiltersChanged(true);
+    }, [fetchTestRuns, pagination.page, pagination.limit, filters]);
 
-    // Memoize UI sections to prevent unnecessary re-renders
+    const handlePreviousPage = useCallback(() => {
+        goToPage(pagination.page - 1);
+        setFiltersChanged(true);
+    }, [goToPage, pagination.page]);
+
+    const handleNextPage = useCallback(() => {
+        goToPage(pagination.page + 1);
+        setFiltersChanged(true);
+    }, [goToPage, pagination.page]);
+
+    // Count active filters for badge display
+    const activeFilterCount = useMemo(() => {
+        let count = 0;
+        if (filters.status && filters.status !== 'All') count++;
+        if (filters.branch) count++;
+        if (filters.tags && filters.tags.length > 0) count++;
+        if (filters.timeRange && filters.timeRange !== 'Last 3 Months') count++;
+        if (filters.searchTerm) count++;
+        return count;
+    }, [filters]);
+
+    // Filter section UI
     const filterSection = useMemo(() => (
         <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
                 <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="search"
                         placeholder="Search test runs..."
                         className="pl-8"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        value={localSearchTerm}
+                        onChange={(e) => setLocalSearchTerm(e.target.value)}
                     />
                 </div>
 
-                <div className="flex gap-2">
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <div className="flex flex-wrap gap-2">
+                    <Select 
+                        value={filters.status || 'All'} 
+                        onValueChange={handleStatusChange}
+                    >
                         <SelectTrigger className="w-[120px]">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
-                            {uniqueStatuses.map((status) => (
-                                <SelectItem key={status} value={status}>{status}</SelectItem>
+                            <SelectItem value="All">All</SelectItem>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="failed">Failed</SelectItem>
+                            <SelectItem value="flaky">Flaky</SelectItem>
+                            <SelectItem value="skipped">Skipped</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Select 
+                        value={filters.branch || 'all'} 
+                        onValueChange={handleBranchChange}
+                    >
+                        <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Branch" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Branches</SelectItem>
+                            {branchOptions.map(branch => (
+                                <SelectItem key={branch} value={branch}>{branch}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <Select 
+                        value={filters.timeRange || 'Last 3 Months'} 
+                        onValueChange={handleTimeRangeChange}
+                    >
+                        <SelectTrigger className="w-[160px]">
+                            <CalendarRange className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="Time Range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {TIME_RANGES.map(range => (
+                                <SelectItem key={range} value={range}>{range}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -177,18 +293,18 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="gap-1">
                                 <Tag className="h-4 w-4" />
-                                Tags {selectedTags.length > 0 && `(${selectedTags.length})`}
+                                Tags {filters.tags && filters.tags.length > 0 && `(${filters.tags.length})`}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-[200px] p-2">
-                            {allAvailableTags.length === 0 ? (
+                            {availableTags.length === 0 ? (
                                 <p className="text-sm text-muted-foreground py-1 px-2">No tags available</p>
                             ) : (
                                 <div className="max-h-[200px] overflow-y-auto">
-                                    {allAvailableTags.map(tag => (
+                                    {availableTags.map(tag => (
                                         <div key={tag} className="flex items-center py-1 px-2 hover:bg-muted rounded">
                                             <Button
-                                                variant={selectedTags.includes(tag) ? "default" : "outline"}
+                                                variant={filters.tags?.includes(tag) ? "default" : "outline"}
                                                 size="sm"
                                                 className="h-6 w-full justify-start text-xs"
                                                 onClick={() => toggleTag(tag)}
@@ -199,24 +315,36 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                     ))}
                                 </div>
                             )}
-                            {selectedTags.length > 0 && (
+                            {filters.tags && filters.tags.length > 0 && (
                                 <Button
                                     variant="ghost"
                                     className="w-full mt-2 h-7 text-xs"
                                     onClick={clearAllTags}
                                 >
-                                    Clear all
+                                    Clear tags
                                 </Button>
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>
+
+                    {activeFilterCount > 0 && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={clearAllFilters}
+                        >
+                            <Filter className="h-4 w-4" />
+                            Clear Filters ({activeFilterCount})
+                        </Button>
+                    )}
                 </div>
             </div>
 
             {/* Display selected tag filters */}
-            {selectedTags.length > 0 && (
+            {filters.tags && filters.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedTags.map(tag => (
+                    {filters.tags.map(tag => (
                         <Badge
                             key={tag}
                             variant="secondary"
@@ -243,8 +371,30 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                     </Button>
                 </div>
             )}
+
+            {/* Show loading indicator during filter changes */}
+            {filtersChanged && isLoading && (
+                <div className="text-xs text-muted-foreground flex items-center gap-1.5 mt-2">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Updating results...
+                </div>
+            )}
         </div>
-    ), [searchTerm, statusFilter, selectedTags, uniqueStatuses, allAvailableTags, toggleTag, clearAllTags]);
+    ), [
+        localSearchTerm, 
+        filters, 
+        availableTags, 
+        branchOptions, 
+        activeFilterCount,
+        handleStatusChange, 
+        handleBranchChange, 
+        handleTimeRangeChange,
+        toggleTag, 
+        clearAllTags, 
+        clearAllFilters,
+        filtersChanged,
+        isLoading
+    ]);
 
     // Main component render
     return (
@@ -301,14 +451,14 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                         <p className="mt-2 text-sm text-muted-foreground">Loading test runs...</p>
                                     </TableCell>
                                 </TableRow>
-                            ) : filteredRuns.length === 0 ? (
+                            ) : testRuns.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={7} className="text-center py-4">
                                         No test runs found matching your filters
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredRuns.map((run) => (
+                                testRuns.map((run) => (
                                     <TableRow
                                         key={run._id}
                                         className="hover:bg-muted/50 cursor-pointer"
@@ -332,7 +482,19 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">
                                                 {run.tags.map((tag: string) => (
-                                                    <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                                                    <Badge 
+                                                        key={tag} 
+                                                        variant="outline" 
+                                                        className="text-xs"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (!filters.tags?.includes(tag)) {
+                                                                toggleTag(tag);
+                                                            }
+                                                        }}
+                                                    >
+                                                        {tag}
+                                                    </Badge>
                                                 ))}
                                             </div>
                                         </TableCell>
@@ -372,10 +534,10 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                     </Table>
 
                     {/* Pagination info */}
-                    {!isLoading && filteredRuns.length > 0 && pagination && (
+                    {!isLoading && testRuns.length > 0 && pagination && (
                         <div className="py-2 px-4 text-sm text-muted-foreground border-t flex justify-between items-center">
                             <div>
-                                Showing {filteredRuns.length} of {pagination.total} results
+                                Showing {testRuns.length} of {pagination.total} results
                             </div>
                             <div className="flex gap-2">
                                 <Button

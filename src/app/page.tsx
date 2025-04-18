@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects, type Project, type ProjectFormData } from "@/hooks/projects/use-projects";
-import { PlusCircle, RefreshCw, LayoutDashboard } from "lucide-react";
+import { PlusCircle, RefreshCw, LayoutDashboard, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/components/auth/auth-context";
 
 export default function ProjectsPage() {
   const router = useRouter();
+  const { logout } = useAuth();
   const {
     projects,
     loading,
@@ -76,22 +78,15 @@ export default function ProjectsPage() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+
               <Button
-                variant="outline"
-                onClick={fetchProjects}
+                variant="ghost"
+                onClick={() => logout()}
                 size="sm"
-                className="h-9 text-sm font-medium"
+                className="h-9 text-sm font-medium text-red-500"
               >
-                <RefreshCw className="h-3.5 w-3.5 mr-2" />
-                Refresh
-              </Button>
-              <Button
-                onClick={handleOpenCreateDialog}
-                size="sm"
-                className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium"
-              >
-                <PlusCircle className="h-3.5 w-3.5 mr-2" />
-                New Project
+                <LogOut className="h-3.5 w-3.5 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
@@ -121,6 +116,8 @@ export default function ProjectsPage() {
           </div>
         ) : !projects || projects.length === 0 ? (
           <Card className="border border-dashed border-border/60 bg-card/50 rounded-lg shadow-sm">
+
+
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                 <PlusCircle className="h-8 w-8 text-primary/70" />
@@ -139,17 +136,31 @@ export default function ProjectsPage() {
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onView={navigateToProjectDetails}
-                onEdit={handleOpenEditDialog}
-                onDelete={deleteProject}
-              />
-            ))}
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-2 justify-between">
+              <p className="text-sm text-muted-foreground">Showing {projects.length} projects</p>
+              <Button
+                onClick={handleOpenCreateDialog}
+                size="sm"
+                className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium"
+              >
+                <PlusCircle className="h-3.5 w-3.5 mr-2" />
+                New Project
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onView={navigateToProjectDetails}
+                  onEdit={handleOpenEditDialog}
+                  onDelete={deleteProject}
+                />
+              ))}
+            </div>
           </div>
+
         )}
       </div>
 

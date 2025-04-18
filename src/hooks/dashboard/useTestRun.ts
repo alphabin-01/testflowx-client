@@ -1,4 +1,3 @@
-// Enhanced useTestRun.ts with URL-based filtering
 import { API_ENDPOINTS } from '@/lib/api';
 import { apiRequest, STATUS } from '@/lib/api-client';
 import { TestRun } from '@/lib/typers';
@@ -47,6 +46,9 @@ export function useTestRun() {
 
     // Track in-flight requests to prevent duplicates
     const requestInProgress = useRef<string | null>(null);
+    
+    // Track if we've initialized from URL params yet
+    const initializedFromUrl = useRef(false);
 
     const [testRuns, setTestRuns] = useState<TestRun[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -58,18 +60,16 @@ export function useTestRun() {
         pages: 1
     });
 
-    // Initialize filters from URL params
-    const [filters, setFilters] = useState<TestRunFilters>(() => {
-        return {
-            status: searchParams.get('status') || 'All',
-            branch: searchParams.get('branch') || '',
-            tags: searchParams.get('tags') ? searchParams.get('tags')!.split(',') : [],
-            timeRange: searchParams.get('timeRange') || 'Last 3 Months',
-            searchTerm: searchParams.get('search') || ''
-        };
+    // Initialize filters state but don't derive from URL yet
+    const [filters, setFilters] = useState<TestRunFilters>({
+        status: 'All',
+        branch: '',
+        tags: [],
+        timeRange: 'Last 3 Months',
+        searchTerm: ''
     });
 
-    // Update URL when filters change
+    // This function updates the URL without triggering a re-render
     const updateUrlWithFilters = useCallback((newFilters: TestRunFilters, page: number) => {
         const params = new URLSearchParams();
         
@@ -97,7 +97,7 @@ export function useTestRun() {
             params.set('page', page.toString());
         }
         
-        // Replace the URL with the new params
+        // Replace the URL with the new params - using replace to avoid adding to history
         const newUrl = `/projects/${projectId}/tests${params.toString() ? `?${params.toString()}` : ''}`;
         router.replace(newUrl, { scroll: false });
     }, [projectId, router]);
@@ -105,8 +105,8 @@ export function useTestRun() {
     // Update filters and trigger a fetch
     const applyFilters = useCallback((newFilters: Partial<TestRunFilters>) => {
         setFilters(prev => {
-            const updated = { ...prev, ...newFilters };
-            return updated;
+            // Create a new object to avoid mutation
+            return { ...prev, ...newFilters };
         });
     }, []);
 
@@ -117,8 +117,10 @@ export function useTestRun() {
         currentFilters: TestRunFilters = filters,
         forceRefresh: boolean = false
     ) => {
-        // Update URL with current filters and page
-        updateUrlWithFilters(currentFilters, page);
+        // Only update URL if we've already initialized (to avoid loop)
+        if (initializedFromUrl.current) {
+            updateUrlWithFilters(currentFilters, page);
+        }
         
         // Create a unique cache key based on all parameters
         const filterString = JSON.stringify(currentFilters);
@@ -216,16 +218,24 @@ export function useTestRun() {
 
     // Effect to fetch data when filters change
     useEffect(() => {
-        // Debounce to avoid multiple rapid fetches when filters change
-        const timer = setTimeout(() => {
-            fetchTestRuns(1, pagination.limit, filters);
-        }, 300);
-        
-        return () => clearTimeout(timer);
+        // Only trigger fetch if we've initialized from URL
+        if (initializedFromUrl.current) {
+            // Debounce to avoid multiple rapid fetches when filters change
+            const timer = setTimeout(() => {
+                fetchTestRuns(1, pagination.limit, filters);
+            }, 300);
+            
+            return () => clearTimeout(timer);
+        }
     }, [filters, fetchTestRuns, pagination.limit]);
 
-    // Read initial filters from URL on component mount
+    // Read initial filters from URL on component mount - runs only once
     useEffect(() => {
+        // Skip if we've already initialized
+        if (initializedFromUrl.current) {
+            return;
+        }
+        
         const page = parseInt(searchParams.get('page') || '1', 10);
         const initialFilters: TestRunFilters = {
             status: searchParams.get('status') || 'All',
@@ -235,8 +245,14 @@ export function useTestRun() {
             searchTerm: searchParams.get('search') || ''
         };
         
+        // Update state without triggering useEffect
         setFilters(initialFilters);
-        fetchTestRuns(page, pagination.limit, initialFilters, true);
+        
+        // Set initialization flag to true
+        initializedFromUrl.current = true;
+        
+        // Initial data fetch
+        fetchTestRuns(page, pagination.limit, initialFilters);
     }, [searchParams, fetchTestRuns, pagination.limit]);
 
     const getTestRun = useCallback((runId: string) => {
@@ -263,9 +279,9 @@ export function useTestRun() {
                 const matchesSearch = !searchTerm ||
                     run._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     (run.environment && run.environment.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                    (run.ci && run.metadata.branchName &&
+                    (run.ci && run.metadata?.branchName &&
                         run.metadata.branchName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                    (run.ci && run.metadata.commitHash &&
+                    (run.ci && run.metadata?.commitHash &&
                         run.metadata.commitHash.toLowerCase().includes(searchTerm.toLowerCase()));
 
                 // Handle tag filters - run must include ALL selected tags
