@@ -26,6 +26,21 @@ export interface TestError {
     message: string;
     stack: string;
     screenshot?: string;
+    matcherResult?: {
+        name: string;
+        message: string;
+        pass: boolean;
+        actual: any;
+        expected?: any;
+        log?: string[];
+        timeout?: number;
+    };
+    location?: {
+        file: string;
+        column: number;
+        line: number;
+    };
+    snippet?: string;
 }
 
 interface TestDetailsDrawerProps {
@@ -87,6 +102,125 @@ export default function TestDetailsDrawer({ isOpen, onClose, test }: TestDetails
         return `${minutes > 0 ? `${minutes}m ` : ''}${seconds}s`;
     };
 
+    // Helper to strip ANSI color codes from error messages
+    const stripAnsi = (str: string) => {
+        return str ? str.replace(/\u001b\[\d{1,2}m/g, '') : '';
+    };
+
+    // Convert complex error object to displayable content
+    const renderErrorContent = () => {
+        if (!test.error) return null;
+
+        // Handle error object or string
+        const errorObj = typeof test.error === 'string' ? { message: test.error } : test.error as TestError;
+        
+        return (
+            <div className="space-y-4">
+                {errorObj.message && (
+                    <div>
+                        <h3 className="text-sm font-medium mb-2">Error Message</h3>
+                        <pre className="p-3 bg-muted rounded-md font-mono text-sm whitespace-pre-wrap overflow-x-auto text-red-600">
+                            {stripAnsi(errorObj.message)}
+                        </pre>
+                    </div>
+                )}
+                
+                {errorObj.matcherResult && (
+                    <div>
+                        <h3 className="text-sm font-medium mb-2">Matcher Details</h3>
+                        <div className="p-3 bg-muted rounded-md space-y-2">
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium">Expected</span>
+                                <code className="text-sm text-green-600">{JSON.stringify(errorObj.matcherResult.expected || "", null, 2)}</code>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-medium">Actual</span>
+                                <code className="text-sm text-red-600">{JSON.stringify(errorObj.matcherResult.actual || "", null, 2)}</code>
+                            </div>
+                            {errorObj.matcherResult.timeout && (
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-medium">Timeout</span>
+                                    <code className="text-sm">{errorObj.matcherResult.timeout}ms</code>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+                
+                {errorObj.location && (
+                    <div>
+                        <h3 className="text-sm font-medium mb-2">Location</h3>
+                        <div className="p-3 bg-muted rounded-md">
+                            <div className="text-sm">
+                                <span className="font-medium">File: </span>
+                                <span className="font-mono text-xs">{errorObj.location.file}</span>
+                            </div>
+                            <div className="text-sm">
+                                <span className="font-medium">Line: </span>
+                                <span className="font-mono">{errorObj.location.line}</span>
+                                <span className="font-medium ml-2">Column: </span>
+                                <span className="font-mono">{errorObj.location.column}</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {errorObj.snippet && (
+                    <div>
+                        <h3 className="text-sm font-medium mb-2">Code Snippet</h3>
+                        <pre className="p-3 bg-muted rounded-md font-mono text-xs overflow-x-auto">
+                            {stripAnsi(errorObj.snippet)}
+                        </pre>
+                    </div>
+                )}
+                
+                {errorObj.stack && (
+                    <div>
+                        <h3 className="text-sm font-medium mb-2">Stack Trace</h3>
+                        <pre className="p-3 bg-muted rounded-md font-mono text-xs overflow-x-auto max-h-60 overflow-y-auto whitespace-pre-wrap">
+                            {stripAnsi(errorObj.stack)}
+                        </pre>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Render attempts for flaky tests
+    const renderAttempts = () => {
+        if (!test.attempts || test.attempts.length === 0) return null;
+        
+        return (
+            <div className="mt-4">
+                <h3 className="text-sm font-medium mb-2">Test Attempts</h3>
+                <div className="space-y-3">
+                    {test.attempts.map((attempt: any, index) => (
+                        <div key={attempt._id || index} className="border rounded-md p-3">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    {getStatusIcon(attempt.status)}
+                                    <span className="font-medium">Attempt #{index + 1}</span>
+                                    {getStatusBadge(attempt.status)}
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                    {formatDuration(attempt.duration)}
+                                </span>
+                            </div>
+                            {attempt.error && (
+                                <div className="mt-2">
+                                    <div className="text-xs font-medium text-muted-foreground mb-1">Error:</div>
+                                    <pre className="text-xs bg-muted/50 p-2 rounded-md overflow-hidden text-ellipsis whitespace-nowrap">
+                                        {stripAnsi(typeof attempt.error === 'string' ? attempt.error : attempt.error.message)}
+                                    </pre>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <Drawer open={isOpen} onOpenChange={(open: boolean) => !open && onClose()} direction="right" >
             <DrawerContent className="w-full md:min-w-[50vw] lg:min-w-[50vw] xl:min-w-[45vw] rounded-l-3xl">
@@ -118,10 +252,11 @@ export default function TestDetailsDrawer({ isOpen, onClose, test }: TestDetails
                 </DrawerHeader>
 
                 <div className="p-4 overflow-auto">
-                    <Tabs defaultValue="details">
-                        <TabsList className="mb-4">
+                    <Tabs defaultValue="details" >
+                        <TabsList className="mb-4 w-full">
                             <TabsTrigger value="details">Details</TabsTrigger>
                             {test.error && <TabsTrigger value="error">Error</TabsTrigger>}
+                            {test.status === 'flaky' && <TabsTrigger value="attempts">Attempts</TabsTrigger>}
                             {(test.console && test.console.length > 0) && <TabsTrigger value="console">Console</TabsTrigger>}
                         </TabsList>
 
@@ -185,28 +320,18 @@ export default function TestDetailsDrawer({ isOpen, onClose, test }: TestDetails
                                         {formatDate(test.updatedAt)}
                                     </div>
                                 </div>
-
-                                {test.metadata && (
-                                    <div className="col-span-2">
-                                        <h3 className="text-sm font-medium mb-2">Metadata</h3>
-                                        <div className="p-3 bg-muted rounded-md">
-                                            <pre className="text-xs overflow-x-auto whitespace-pre-wrap">
-                                                {JSON.stringify(test.metadata, null, 2)}
-                                            </pre>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </TabsContent>
 
                         {test.error && (
                             <TabsContent value="error" className="space-y-4">
-                                <div>
-                                    <h3 className="text-sm font-medium mb-2">Error Message</h3>
-                                    <div className="p-3 bg-muted rounded-md font-mono text-sm break-all">
-                                        {test.error}
-                                    </div>
-                                </div>
+                                {renderErrorContent()}
+                            </TabsContent>
+                        )}
+
+                        {test.status === 'flaky' && (
+                            <TabsContent value="attempts" className="space-y-4">
+                                {renderAttempts()}
                             </TabsContent>
                         )}
 
@@ -222,8 +347,8 @@ export default function TestDetailsDrawer({ isOpen, onClose, test }: TestDetails
                         )}
                     </Tabs>
                 </div>
-
-                <DrawerFooter className="border-t pt-4">
+{/* 
+                <DrawerFooter className="border-t">
                     <div className="flex gap-2">
                         <Button className="flex-1">
                             {test.status === 'failed' ? 'Mark as Fixed' : 'Rerun Test'}
@@ -232,7 +357,7 @@ export default function TestDetailsDrawer({ isOpen, onClose, test }: TestDetails
                             View Full Details
                         </Button>
                     </div>
-                </DrawerFooter>
+                </DrawerFooter> */}
             </DrawerContent>
         </Drawer>
     );

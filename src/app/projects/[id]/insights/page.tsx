@@ -2,7 +2,7 @@
 
 import { ApiKeyCheck } from "@/components/dashboard/api-keys/api-key-check";
 import BreadcrumbNav from "@/components/dashboard/component/breadcumb";
-import { InsightsContent } from "@/components/dashboard/insights/insights";
+import { TestInsightsDashboard } from "@/components/dashboard/insights/insights";
 import { LightbulbIcon, HomeIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 
@@ -19,7 +19,7 @@ export default function InsightsPage() {
                     </p>
                 </div>
 
-                <InsightsContent projectId={id as string} />
+                <TestInsightsDashboard projectId={id as string} />
             </div>
         </ApiKeyCheck>
     );

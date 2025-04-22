@@ -1,3 +1,5 @@
+'use client';
+
 import { API_ENDPOINTS } from '@/lib/api';
 import { apiRequest, STATUS } from '@/lib/api-client';
 import { TestRun, TestSuite, TestCase } from '@/lib/typers';
@@ -32,7 +34,7 @@ export function useTestDetail(runId: string) {
 
         try {
             const response = await apiRequest(API_ENDPOINTS.testRuns.getTestRunById(runId));
-            setRunStats(response.data.testRun);
+            setRunStats(response.data.testRun as TestRun);
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Failed to fetch test run stats');
         } finally {
@@ -45,7 +47,7 @@ export function useTestDetail(runId: string) {
 
         try {
             const response = await apiRequest(API_ENDPOINTS.testSuites.getTestRunById(runId));
-            setTestSuites(response.data.testSuites);
+            setTestSuites(response.data.testSuites as TestSuite[]);
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Failed to fetch test run suites');
         } finally {
@@ -79,7 +81,7 @@ export function useTestDetail(runId: string) {
             setTestSuites(prevSuites =>
                 prevSuites.map(suite =>
                     suite._id === suiteId
-                        ? { ...suite, testCases: response.data.testCases }
+                        ? { ...suite, testCases: response.data.testCases as TestCase[] }
                         : suite
                 )
             );

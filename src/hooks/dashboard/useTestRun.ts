@@ -31,7 +31,6 @@ export interface TestRunFilters {
     status?: string;
     branch?: string;
     tags?: string[];
-    timeRange?: string;
     searchTerm?: string;
 }
 
@@ -65,7 +64,6 @@ export function useTestRun() {
         status: 'All',
         branch: '',
         tags: [],
-        timeRange: 'Last 3 Months',
         searchTerm: ''
     });
 
@@ -83,10 +81,6 @@ export function useTestRun() {
         
         if (newFilters.tags && newFilters.tags.length > 0) {
             params.set('tags', newFilters.tags.join(','));
-        }
-        
-        if (newFilters.timeRange && newFilters.timeRange !== 'Last 3 Months') {
-            params.set('timeRange', newFilters.timeRange);
         }
         
         if (newFilters.searchTerm) {
@@ -169,9 +163,6 @@ export function useTestRun() {
                 params.tags = currentFilters.tags.join(',');
             }
             
-            if (currentFilters.timeRange) {
-                params.timeRange = currentFilters.timeRange;
-            }
             
             if (currentFilters.searchTerm) {
                 params.search = currentFilters.searchTerm;
@@ -241,7 +232,6 @@ export function useTestRun() {
             status: searchParams.get('status') || 'All',
             branch: searchParams.get('branch') || '',
             tags: searchParams.get('tags') ? searchParams.get('tags')!.split(',') : [],
-            timeRange: searchParams.get('timeRange') || 'Last 3 Months',
             searchTerm: searchParams.get('search') || ''
         };
         

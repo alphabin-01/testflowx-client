@@ -170,11 +170,6 @@ const TestContent = ({ projectId }: { projectId: string }) => {
         setFiltersChanged(true);
     }, [applyFilters]);
 
-    const handleTimeRangeChange = useCallback((timeRange: string) => {
-        applyFilters({ timeRange });
-        setFiltersChanged(true);
-    }, [applyFilters]);
-
     const toggleTag = useCallback((tag: string) => {
         applyFilters({ 
             tags: filters.tags?.includes(tag)
@@ -195,7 +190,6 @@ const TestContent = ({ projectId }: { projectId: string }) => {
             status: 'All',
             branch: '',
             tags: [],
-            timeRange: 'Last 3 Months',
             searchTerm: ''
         });
         setFiltersChanged(true);
@@ -222,7 +216,6 @@ const TestContent = ({ projectId }: { projectId: string }) => {
         if (filters.status && filters.status !== 'All') count++;
         if (filters.branch) count++;
         if (filters.tags && filters.tags.length > 0) count++;
-        if (filters.timeRange && filters.timeRange !== 'Last 3 Months') count++;
         if (filters.searchTerm) count++;
         return count;
     }, [filters]);
@@ -270,21 +263,6 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                             <SelectItem value="all">All Branches</SelectItem>
                             {branchOptions.map(branch => (
                                 <SelectItem key={branch} value={branch}>{branch}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-
-                    <Select 
-                        value={filters.timeRange || 'Last 3 Months'} 
-                        onValueChange={handleTimeRangeChange}
-                    >
-                        <SelectTrigger className="w-[160px]">
-                            <CalendarRange className="h-4 w-4 mr-2" />
-                            <SelectValue placeholder="Time Range" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {TIME_RANGES.map(range => (
-                                <SelectItem key={range} value={range}>{range}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -388,7 +366,6 @@ const TestContent = ({ projectId }: { projectId: string }) => {
         activeFilterCount,
         handleStatusChange, 
         handleBranchChange, 
-        handleTimeRangeChange,
         toggleTag, 
         clearAllTags, 
         clearAllFilters,
