@@ -10,8 +10,7 @@ import {
 import {
     DropdownMenu,
     DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+    DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,85 +20,182 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useTestRun } from '@/hooks/dashboard/useTestRun';
-import { TestCase } from '@/lib/typers';
-import { statusConfig as baseStatusConfig } from '@/lib/typers';
+import { statusConfig as baseStatusConfig, TestCase } from '@/lib/typers';
 import {
+    AlertTriangle,
+    Calendar,
+    CheckCircle,
     Clock,
+    Filter,
     GitBranch,
     GitCommit,
-    MoreVertical,
     RefreshCw,
     Search,
-    Terminal,
-    XCircle,
-    CheckCircle,
-    AlertTriangle,
     Tag,
-    CalendarRange,
-    Filter,
+    Terminal,
+    XCircle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Initialize with icons, just like in details.tsx
 const statusConfig = {
     ...baseStatusConfig,
     completed: {
         ...baseStatusConfig.completed,
-        icon: <CheckCircle className="h-4 w-4" />
+        icon: <CheckCircle className="h-4 w-4 text-emerald-500" />,
+        bgColor: 'bg-emerald-500',
+        textColor: 'text-emerald-700',
+        bgLight: 'bg-emerald-50'
     },
     failed: {
         ...baseStatusConfig.failed,
-        icon: <XCircle className="h-4 w-4" />
+        icon: <XCircle className="h-4 w-4 text-red-500" />,
+        bgColor: 'bg-red-500',
+        textColor: 'text-red-700',
+        bgLight: 'bg-red-50'
     },
     flaky: {
         ...baseStatusConfig.flaky,
-        icon: <AlertTriangle className="h-4 w-4" />
+        icon: <AlertTriangle className="h-4 w-4 text-amber-500" />,
+        bgColor: 'bg-amber-500',
+        textColor: 'text-amber-700',
+        bgLight: 'bg-amber-50'
     },
     skipped: {
         ...baseStatusConfig.skipped,
-        icon: <Clock className="h-4 w-4" />
+        icon: <Clock className="h-4 w-4 text-slate-500" />,
+        bgColor: 'bg-slate-500',
+        textColor: 'text-slate-700',
+        bgLight: 'bg-slate-50'
     }
 };
 
-// Time range options for filtering
-const TIME_RANGES = [
-    'Last 3 Months',
-    'Last Month',
-    'Last Week',
-    'Last 24 Hours',
-    'Custom Range'
-];
+const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters }) => {
+    // Format date/time in a consistent way
+    const formatDateTime = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleString();
+    };
+
+    return (
+        <div
+            className="border rounded-lg px-3 py-2 mb-2 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+            onClick={() => navigateToRunDetails(run._id)}
+        >
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                {/* Left column - Status and ID */}
+                <div className="flex items-start gap-3" style={{ alignItems: 'center' }}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${statusConfig[run.status as keyof typeof statusConfig]?.bgLight || 'bg-slate-100'}`}>
+                        {statusConfig[run.status as keyof typeof statusConfig]?.icon || <Clock className="h-5 w-5 text-slate-500" />}
+                    </div>
+
+                    <div>
+                        <h3 className="font-medium text-sm flex items-center">
+                            <span className="mr-2 capitalize">{run.metadata.commitMessage}</span>
+                            <Badge variant="outline" className="text-xs font-normal">
+                                ID: {run._id}
+                            </Badge>
+                        </h3>
+
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
+                            <div className="flex items-center">
+                                <Calendar className="h-3.5 w-3.5 mr-1" />
+                                <span>{formatDateTime(run.startTime)}</span>
+                            </div>
+                            <div className="flex items-center">
+                                <Clock className="h-3.5 w-3.5 mr-1" />
+                                <span>{(run.duration / 1000).toFixed(1)}s</span>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap mt-2 gap-1.5">
+                            {run.tags.map((tag) => (
+                                <Badge
+                                    key={tag}
+                                    variant="outline"
+                                    className="text-xs"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!filters.tags?.includes(tag)) {
+                                            toggleTag(tag);
+                                        }
+                                    }}
+                                >
+                                    {tag}
+                                </Badge>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right column - Environment info */}
+                <div className="flex flex-col items-start md:items-end gap-2">
+                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        {run.ci ? <GitBranch className="h-3 w-3" /> : <Terminal className="h-3 w-3" />}
+                        {run.ci ? run.metadata?.branchName : run.environment}
+                    </Badge>
+
+                    {run.ci && run.metadata?.commitHash && (
+                        <Badge variant="outline" className="text-xs flex items-center gap-1">
+                            <GitCommit className="h-3 w-3" />
+                            {run.metadata.commitHash.slice(0, 7)}
+                        </Badge>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const TestRunListSkeleton = () => {
+    return (
+        <>
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="border rounded-lg p-3 mb-2">
+                    <div className="flex items-start gap-3">
+                        <Skeleton className="w-10 h-10 rounded-full" />
+                        <div className="w-full">
+                            <div className="flex justify-between">
+                                <Skeleton className="h-5 w-28 mb-2" />
+                                <Skeleton className="h-5 w-20" />
+                            </div>
+                            <Skeleton className="h-4 w-3/4 mb-2" />
+                            <div className="flex gap-2">
+                                <Skeleton className="h-5 w-16" />
+                                <Skeleton className="h-5 w-16" />
+                                <Skeleton className="h-5 w-16" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </>
+    );
+};
 
 const TestContent = ({ projectId }: { projectId: string }) => {
     const router = useRouter();
-    const { 
-        testRuns, 
-        isLoading, 
-        error, 
-        pagination, 
+    const {
+        testRuns,
+        isLoading,
+        error,
+        pagination,
         filters,
         applyFilters,
         fetchTestRuns,
         goToPage
     } = useTestRun();
-    
+
     const [selectedTest, setSelectedTest] = useState<TestCase | null>(null);
     const [localSearchTerm, setLocalSearchTerm] = useState('');
-    
+
     // Local filter states for UI
     const [branchOptions, setBranchOptions] = useState<string[]>([]);
     const [availableTags, setAvailableTags] = useState<string[]>([]);
-    
+
     // Track if the filters have been applied and API request is pending
     const [filtersChanged, setFiltersChanged] = useState(false);
 
@@ -123,7 +219,9 @@ const TestContent = ({ projectId }: { projectId: string }) => {
             // Extract unique tags
             const tags = new Set<string>();
             testRuns.forEach(run => {
-                run.tags.forEach(tag => tags.add(tag));
+                if (run.tags && Array.isArray(run.tags)) {
+                    run.tags.forEach(tag => tags.add(tag));
+                }
             });
             setAvailableTags(Array.from(tags));
         }
@@ -148,12 +246,6 @@ const TestContent = ({ projectId }: { projectId: string }) => {
         }
     }, [isLoading]);
 
-    // Format date/time in a consistent way
-    const formatDateTime = useCallback((dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleString();
-    }, []);
-
     // Navigate to run details page
     const navigateToRunDetails = useCallback((runId: string) => {
         router.push(`/projects/${projectId}/test-run/${runId}`);
@@ -171,7 +263,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
     }, [applyFilters]);
 
     const toggleTag = useCallback((tag: string) => {
-        applyFilters({ 
+        applyFilters({
             tags: filters.tags?.includes(tag)
                 ? filters.tags.filter(t => t !== tag)
                 : [...(filters.tags || []), tag]
@@ -236,8 +328,8 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                    <Select 
-                        value={filters.status || 'All'} 
+                    <Select
+                        value={filters.status || 'All'}
                         onValueChange={handleStatusChange}
                     >
                         <SelectTrigger className="w-[120px]">
@@ -252,8 +344,8 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                         </SelectContent>
                     </Select>
 
-                    <Select 
-                        value={filters.branch || 'all'} 
+                    <Select
+                        value={filters.branch || 'all'}
                         onValueChange={handleBranchChange}
                     >
                         <SelectTrigger className="w-[140px]">
@@ -359,15 +451,15 @@ const TestContent = ({ projectId }: { projectId: string }) => {
             )}
         </div>
     ), [
-        localSearchTerm, 
-        filters, 
-        availableTags, 
-        branchOptions, 
+        localSearchTerm,
+        filters,
+        availableTags,
+        branchOptions,
         activeFilterCount,
-        handleStatusChange, 
-        handleBranchChange, 
-        toggleTag, 
-        clearAllTags, 
+        handleStatusChange,
+        handleBranchChange,
+        toggleTag,
+        clearAllTags,
         clearAllFilters,
         filtersChanged,
         isLoading
@@ -376,168 +468,79 @@ const TestContent = ({ projectId }: { projectId: string }) => {
     // Main component render
     return (
         <div className="space-y-4">
-            <Card className="shadow-sm">
-                <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                        <CardTitle>Test Runs</CardTitle>
+            <CardHeader className="p-0 gap-0">
+                <div className="flex items-center justify-between">
+                    <CardTitle className='text-xl'>Test Runs</CardTitle>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8"
+                        onClick={handleRefreshClick}
+                        disabled={isLoading}
+                    >
+                        <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                    </Button>
+                </div>
+                <CardDescription>Browse and analyze your test executions</CardDescription>
+            </CardHeader>
+            <CardContent className='p-0'>
+                {error && (
+                    <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-900">
+                        <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+                    </div>
+                )}
+
+                {filterSection}
+            </CardContent>
+            {/* Pagination controls */}
+            {!isLoading && testRuns.length > 0 && pagination && (
+                <div className="mt-4 flex justify-between items-center">
+                    <div className="text-sm text-muted-foreground">
+                        Showing {testRuns.length} of {pagination.total} results
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={pagination.page <= 1}
+                            onClick={handlePreviousPage}
+                        >
+                            Previous
+                        </Button>
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-8"
-                            onClick={handleRefreshClick}
-                            disabled={isLoading}
+                            disabled={pagination.page >= pagination.pages}
+                            onClick={handleNextPage}
                         >
-                            <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-                            {isLoading ? "Loading..." : "Refresh"}
+                            Next
                         </Button>
                     </div>
-                    <CardDescription>Browse and analyze your test executions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {/* Error message */}
-                    {error && (
-                        <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-900">
-                            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-                        </div>
-                    )}
+                </div>
+            )}
+            <CardContent className='p-0'>
+                {isLoading ? (
+                    <TestRunListSkeleton />
+                ) : testRuns.length === 0 ? (
+                    <div className="text-center py-8 border rounded-lg">
+                        <p className="text-muted-foreground">No test runs found matching your filters</p>
+                    </div>
+                ) : (
+                    <div>
+                        {testRuns.map((run) => (
+                            <TestRunItem
+                                key={run._id}
+                                run={run}
+                                navigateToRunDetails={navigateToRunDetails}
+                                toggleTag={toggleTag}
+                                filters={filters}
+                            />
+                        ))}
+                    </div>
+                )}
 
-                    {filterSection}
-                </CardContent>
-            </Card>
 
-            {/* Test Runs Table */}
-            <Card className="shadow-sm">
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Test Run ID</TableHead>
-                                <TableHead>Start Time</TableHead>
-                                <TableHead>Duration</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Tags</TableHead>
-                                <TableHead>Env</TableHead>
-                                <TableHead className="w-[50px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-4">
-                                        <RefreshCw className="h-5 w-5 animate-spin mx-auto" />
-                                        <p className="mt-2 text-sm text-muted-foreground">Loading test runs...</p>
-                                    </TableCell>
-                                </TableRow>
-                            ) : testRuns.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center py-4">
-                                        No test runs found matching your filters
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                testRuns.map((run) => (
-                                    <TableRow
-                                        key={run._id}
-                                        className="hover:bg-muted/50 cursor-pointer"
-                                        onClick={() => navigateToRunDetails(run._id)}
-                                    >
-                                        <TableCell className="font-medium">{run._id}</TableCell>
-                                        <TableCell>{formatDateTime(run.startTime)}</TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1">
-                                                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                                                {(run.duration / 1000).toFixed(1)}s
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-1.5">
-                                                <div className={`h-2 w-2 rounded-full ${statusConfig[run.status]?.bgColor || 'bg-gray-200'
-                                                    }`}></div>
-                                                <span className="capitalize">{run.status}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-wrap gap-1">
-                                                {run.tags.map((tag: string) => (
-                                                    <Badge 
-                                                        key={tag} 
-                                                        variant="outline" 
-                                                        className="text-xs"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            if (!filters.tags?.includes(tag)) {
-                                                                toggleTag(tag);
-                                                            }
-                                                        }}
-                                                    >
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="flex items-left gap-1.5 flex-col">
-                                            <Badge variant="outline" className="text-xs flex items-center gap-1 w-fit">
-                                                {run.ci ? <GitBranch className="h-3 w-3" /> : <Terminal className="h-3 w-3" />}
-                                                {run.ci ? run.metadata.branchName : run.environment}
-                                            </Badge>
-                                            {run.ci && (
-                                                <Badge variant="outline" className="text-xs flex items-center gap-1 w-fit">
-                                                    <GitCommit className="h-3 w-3" />
-                                                    {run.metadata.commitHash}
-                                                </Badge>
-                                            )}
-                                        </TableCell>
-                                        <TableCell onClick={(e) => e.stopPropagation()}>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                        <MoreVertical className="h-4 w-4" />
-                                                        <span className="sr-only">Open menu</span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => navigateToRunDetails(run._id)}>
-                                                        View Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem>Download Results</DropdownMenuItem>
-                                                    <DropdownMenuItem>Re-run Tests</DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-
-                    {/* Pagination info */}
-                    {!isLoading && testRuns.length > 0 && pagination && (
-                        <div className="py-2 px-4 text-sm text-muted-foreground border-t flex justify-between items-center">
-                            <div>
-                                Showing {testRuns.length} of {pagination.total} results
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={pagination.page <= 1}
-                                    onClick={handlePreviousPage}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={pagination.page >= pagination.pages}
-                                    onClick={handleNextPage}
-                                >
-                                    Next
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+            </CardContent>
 
             {/* Test Details */}
             {selectedTest && (

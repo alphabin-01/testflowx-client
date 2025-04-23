@@ -60,60 +60,6 @@ const formatDuration = (ms: number): string => {
     return `${minutes > 0 ? `${minutes}m ` : ''}${seconds}s`;
 };
 
-// Component to render the progress bar
-const TestProgressBar = ({ stats }) => {
-    if (!stats || !stats.total) return null;
-
-    return (
-        <div className="bg-white rounded-lg border p-4">
-            <div className="w-full h-8 bg-gray-100 rounded-full overflow-hidden flex">
-                {stats.passed > 0 && (
-                    <div
-                        className="bg-green-500 h-full"
-                        style={{ width: `${(stats.passed / stats.total) * 100}%` }}
-                    />
-                )}
-                {stats.failed > 0 && (
-                    <div
-                        className="bg-red-500 h-full"
-                        style={{ width: `${(stats.failed / stats.total) * 100}%` }}
-                    />
-                )}
-                {stats.flaky > 0 && (
-                    <div
-                        className="bg-amber-500 h-full"
-                        style={{ width: `${(stats.flaky / stats.total) * 100}%` }}
-                    />
-                )}
-                {stats.skipped > 0 && (
-                    <div
-                        className="bg-slate-400 h-full"
-                        style={{ width: `${(stats.skipped / stats.total) * 100}%` }}
-                    />
-                )}
-            </div>
-
-            <div className="flex justify-between mt-4">
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-green-500" />
-                    <span className="text-xs">Passed: {stats.passed}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span className="text-xs">Failed: {stats.failed}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-amber-500" />
-                    <span className="text-xs">Flaky: {stats.flaky}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <div className="w-3 h-3 rounded-full bg-slate-400" />
-                    <span className="text-xs">Skipped: {stats.skipped}</span>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 // Component to render the stats cards
 const TestStatsCards = ({ stats }) => {
@@ -201,10 +147,12 @@ const SystemInfo = ({ stats }: { stats: any }) => {
     if (!stats?.system) return null;
 
     const renderInfoField = (label: string, value: string) => (
-        <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">{label}</span>
-            <span className="text-sm truncate">{value}</span>
-        </div>
+        value ? (
+            <div className="flex flex-col">
+                <span className="text-xs text-muted-foreground">{label}</span>
+                <span className="text-sm truncate">{value}</span>
+            </div>
+        ) : null
     );
 
     const renderCIMetadata = () => {
@@ -240,7 +188,7 @@ const SystemInfo = ({ stats }: { stats: any }) => {
                 {renderInfoField('Memory', stats.system.memory)}
                 {renderInfoField('Node.js', stats.system.nodejs)}
                 {renderInfoField('Playwright', stats.system.playwright)}
-                {renderInfoField('Browser', `${stats.system.browser} ${stats.system.browserVersion}`)}
+                {renderInfoField('Browser', `${stats.system.browser}`)}
             </div>
         </div>
     );
@@ -317,12 +265,34 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
 
                 {/* Stats cards */}
                 <TestStatsCards stats={stats} />
-
-                <div className="flex flex-col gap-4">
-                    {/* Summary stats visualization */}
-                    <TestProgressBar stats={stats} />
+                <div className="bg-white rounded-lg border p-4">
+                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden flex">
+                        {stats.passed > 0 && (
+                            <div
+                                className="bg-green-500 h-full"
+                                style={{ width: `${(stats.passed / stats.total) * 100}%` }}
+                            />
+                        )}
+                        {stats.failed > 0 && (
+                            <div
+                                className="bg-red-500 h-full"
+                                style={{ width: `${(stats.failed / stats.total) * 100}%` }}
+                            />
+                        )}
+                        {stats.flaky > 0 && (
+                            <div
+                                className="bg-amber-500 h-full"
+                                style={{ width: `${(stats.flaky / stats.total) * 100}%` }}
+                            />
+                        )}
+                        {stats.skipped > 0 && (
+                            <div
+                                className="bg-slate-400 h-full"
+                                style={{ width: `${(stats.skipped / stats.total) * 100}%` }}
+                            />
+                        )}
+                    </div>
                 </div>
-
                 {/* Tabs */}
                 <div className="border-b">
                     <div className="flex gap-3">
