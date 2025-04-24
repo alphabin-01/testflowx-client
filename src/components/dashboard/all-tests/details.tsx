@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from "@/components/ui/badge";
 import {
     Table,
     TableBody,
@@ -9,6 +10,7 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { useTestDetail } from "@/hooks/dashboard/useTestDetail";
+import { TestSuite } from "@/lib/typers";
 import {
     AlertCircle,
     AlertTriangle,
@@ -16,17 +18,12 @@ import {
     Clock,
     Computer,
     GitBranch,
-    HomeIcon,
     RefreshCw,
     XCircle
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import BreadcrumbNav from "../component/breadcumb";
 import TestSuiteItem from "./item";
-import { TestSuite } from "@/lib/typers";
-import { Badge } from "@/components/ui/badge";
-import { Loader } from "@/components/ui/loader";
 
 // Status configuration for consistent styling
 const STATUS_CONFIG = {
@@ -62,7 +59,7 @@ const formatDuration = (ms: number): string => {
 
 
 // Component to render the stats cards
-const TestStatsCards = ({ stats }) => {
+const TestStatsCards = ({ stats }: { stats: any }) => {
     if (!stats) return null;
 
     return (
@@ -104,7 +101,7 @@ const TestStatsCards = ({ stats }) => {
 };
 
 // Timeline view component
-const TestTimeline = ({ testSuites }) => {
+const TestTimeline = ({ testSuites }: { testSuites: TestSuite[] }) => {
     if (!testSuites || testSuites.length === 0) {
         return (
             <div className="flex items-center justify-center h-32">
@@ -194,43 +191,13 @@ const SystemInfo = ({ stats }: { stats: any }) => {
     );
 };
 
-// Loading state component
-const LoadingState = ({ breadcrumbLinks }) => (
-    <div className="mx-10 py-6">
-        <div className="mb-4">
-            <BreadcrumbNav links={breadcrumbLinks} />
-        </div>
-        <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2">
-                <Loader />
-                <p className="text-muted-foreground">Loading test run data...</p>
-            </div>
-        </div>
-    </div>
-);
-
-// Error state component
-const ErrorState = ({ breadcrumbLinks, error }) => (
-    <div className="mx-10 py-6">
-        <div className="mb-4">
-            <BreadcrumbNav links={breadcrumbLinks} />
-        </div>
-        <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2">
-                <AlertCircle className="h-8 w-8 text-red-500" />
-                <p className="text-red-500 font-medium">Error loading test run</p>
-                <p className="text-muted-foreground">{error}</p>
-            </div>
-        </div>
-    </div>
-);
 
 // Main TestRunPage component
 export default function TestRunPage({ projectId }: { projectId: string }) {
     const params = useParams();
     const runId = (params?.test as string) || '';
     const [activeTab, setActiveTab] = useState<'suites' | 'timeline'>('suites');
-    const { stats, testSuites, loading, error } = useTestDetail(runId);
+    const { stats, testSuites, loading, error }: { stats: any, testSuites: any, loading: any, error: any } = useTestDetail(runId);
 
 
     return (
@@ -334,7 +301,7 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
                                         </TableHeader>
                                         <TableBody>
                                             {testSuites && testSuites.length > 0 ? (
-                                                testSuites.map((suite, index) => (
+                                                testSuites.map((suite: TestSuite, index: number) => (
                                                     <TestSuiteItem
                                                         key={suite._id || index}
                                                         suite={suite}

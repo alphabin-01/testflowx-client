@@ -12,19 +12,19 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import {
-    ResponsiveContainer,
-    AreaChart,
     Area,
-    BarChart,
+    AreaChart,
     Bar,
-    XAxis,
-    YAxis,
+    BarChart,
     CartesianGrid,
-    Tooltip,
-    Legend,
     Cell,
+    Legend,
     Line,
-    LineChart
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis
 } from "recharts";
 
 const formatDuration = (ms: number) => {

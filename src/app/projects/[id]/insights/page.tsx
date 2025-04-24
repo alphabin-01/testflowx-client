@@ -1,9 +1,8 @@
 'use client';
 
 import { ApiKeyCheck } from "@/components/dashboard/api-keys/api-key-check";
-import { LightbulbIcon, HomeIcon } from "lucide-react";
-import { useParams } from "next/navigation";
 import { SalesforceEnvironmentInsights } from "@/components/dashboard/salesforce/environment-insights";
+import { useParams } from "next/navigation";
 
 export default function InsightsPage() {
     const { id } = useParams();

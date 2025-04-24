@@ -1,14 +1,9 @@
 "use client"
 
 import {
-    IconBolt,
     IconChartLine,
-    IconFlask,
     IconHistory,
     IconHome,
-    IconList,
-    IconMoodSad,
-    IconSettings,
     IconX
 } from "@tabler/icons-react"
 
