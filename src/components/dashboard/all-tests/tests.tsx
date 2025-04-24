@@ -483,7 +483,7 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                 </div>
                 <CardDescription>Browse and analyze your test executions</CardDescription>
             </CardHeader>
-            <CardContent className='p-0'>
+            {/* <CardContent className='p-0'>
                 {error && (
                     <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-900">
                         <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
@@ -491,9 +491,9 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                 )}
 
                 {filterSection}
-            </CardContent>
+            </CardContent> */}
             {/* Pagination controls */}
-            {!isLoading && testRuns.length > 0 && pagination && (
+            {/* {!isLoading && testRuns.length > 0 && pagination && (
                 <div className="mt-4 flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">
                         Showing {testRuns.length} of {pagination.total} results
@@ -517,7 +517,10 @@ const TestContent = ({ projectId }: { projectId: string }) => {
                         </Button>
                     </div>
                 </div>
-            )}
+            )} */}
+
+
+
             <CardContent className='p-0'>
                 {isLoading ? (
                     <TestRunListSkeleton />
