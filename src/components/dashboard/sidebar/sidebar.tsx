@@ -41,15 +41,15 @@ export function AppSidebar({
     // Define dashboard links
     const dashboardLinks = [
         {
-            title: "Analytics",
+            title: "Dashboard",
             href: `/projects/${projectId}`,
-            icon: <IconChartLine className="h-4 w-4" />,
+            icon: <IconHome className="h-4 w-4" />,
             variant: "default" as const,
         },
         {
-            title: "AI Insights",
+            title: "AI Analytics",
             href: `/projects/${projectId}/insights`,
-            icon: <IconBolt className="h-4 w-4" />,
+            icon: <IconChartLine className="h-4 w-4" />,
             variant: "default" as const,
         },
     ];
@@ -70,12 +70,7 @@ export function AppSidebar({
             href: `/projects/${projectId}/api-keys`,
             icon: <KeyIcon className="h-4 w-4" />,
             variant: "default" as const,
-        },
-        {
-            title: "Settings",
-            href: `/projects/${projectId}/settings`,
-            icon: <IconSettings className="h-4 w-4" />,
-        },
+        }
     ];
 
     return (

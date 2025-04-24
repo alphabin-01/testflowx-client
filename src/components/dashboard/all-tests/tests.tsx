@@ -134,16 +134,8 @@ const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters }) => {
                 {/* Right column - Environment info */}
                 <div className="flex flex-col items-start md:items-end gap-2">
                     <Badge variant="outline" className="text-xs flex items-center gap-1">
-                        {run.ci ? <GitBranch className="h-3 w-3" /> : <Terminal className="h-3 w-3" />}
-                        {run.ci ? run.metadata?.branchName : run.environment}
+                        {run.ci ? run.metadata?.branchName === 'main' ? 'Production' : 'SandBox' : run.environment}
                     </Badge>
-
-                    {run.ci && run.metadata?.commitHash && (
-                        <Badge variant="outline" className="text-xs flex items-center gap-1">
-                            <GitCommit className="h-3 w-3" />
-                            {run.metadata.commitHash.slice(0, 7)}
-                        </Badge>
-                    )}
                 </div>
             </div>
         </div>
