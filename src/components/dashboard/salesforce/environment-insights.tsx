@@ -79,214 +79,214 @@ interface EnvironmentData {
 
 // Mock data for production
 const productionData: EnvironmentData = {
-  environmentCard: {
-    name: "Production",
-    testsRun: 138,
-    passRate: 97,
-    flakyTests: 0,
-    aiScore: 95,
-    refreshDate: "Last updated 2 minutes ago",
-    dataVolume: "Live Production Data"
-  },
-  moduleHealthData: [
-    { 
-      module: "Lead Management", 
-      totalTests: 26, 
-      failures: 0, 
-      flakyTests: 0, 
-      confidenceScore: 98, 
-      status: "Stable" 
+    environmentCard: {
+      name: "Production",
+      testsRun: 138,
+      passRate: 97,
+      flakyTests: 0,
+      aiScore: 95,
+      refreshDate: "Last updated 2 minutes ago",
+      dataVolume: "Live Production Data"
     },
-    { 
-      module: "Opportunity Pipeline", 
-      totalTests: 34, 
-      failures: 1, 
-      flakyTests: 0, 
-      confidenceScore: 95, 
-      status: "Stable" 
-    },
-    { 
-      module: "Account & Contact", 
-      totalTests: 28, 
-      failures: 0, 
-      flakyTests: 0, 
-      confidenceScore: 97, 
-      status: "Stable" 
-    },
-    { 
-      module: "Quote & Contract", 
-      totalTests: 18, 
-      failures: 0, 
-      flakyTests: 0, 
-      confidenceScore: 96, 
-      status: "Stable" 
-    },
-    { 
-      module: "Loan Application", 
-      totalTests: 21, 
-      failures: 3, 
-      flakyTests: 0, 
-      confidenceScore: 89, 
-      status: "Needs Monitoring" 
-    },
-    { 
-      module: "Service Cloud Cases", 
-      totalTests: 11, 
-      failures: 0, 
-      flakyTests: 0, 
-      confidenceScore: 95, 
-      status: "Stable" 
+    moduleHealthData: [
+      { 
+        module: "Product Catalog", 
+        totalTests: 26, 
+        failures: 0, 
+        flakyTests: 0, 
+        confidenceScore: 98, 
+        status: "Stable" 
+      },
+      { 
+        module: "Shopping Cart", 
+        totalTests: 34, 
+        failures: 1, 
+        flakyTests: 0, 
+        confidenceScore: 95, 
+        status: "Stable" 
+      },
+      { 
+        module: "User Authentication", 
+        totalTests: 28, 
+        failures: 0, 
+        flakyTests: 0, 
+        confidenceScore: 97, 
+        status: "Stable" 
+      },
+      { 
+        module: "Checkout Process", 
+        totalTests: 18, 
+        failures: 0, 
+        flakyTests: 0, 
+        confidenceScore: 96, 
+        status: "Stable" 
+      },
+      { 
+        module: "Payment Gateway", 
+        totalTests: 21, 
+        failures: 3, 
+        flakyTests: 0, 
+        confidenceScore: 89, 
+        status: "Needs Monitoring" 
+      },
+      { 
+        module: "Customer Support", 
+        totalTests: 11, 
+        failures: 0, 
+        flakyTests: 0, 
+        confidenceScore: 95, 
+        status: "Stable" 
+      }
+    ],
+    crossEnvironmentIssues: [],
+    aiInsights: [
+      {
+        title: "Payment Gateway Integration Issues",
+        description: "The Payment Gateway has 3 failing tests related to transaction validation. These failures are caused by a recent API change in the Spring '25 update that affects required parameters in the payment verification process."
+      },
+      {
+        title: "Continuous Integration Impact",
+        description: "Recent CI pipeline improvements have resulted in more consistent test runs in Production deployments. Pass rate has improved from 94% to 97% after implementing proper test data seeding in deployment scripts."
+      },
+      {
+        title: "Production Security Testing",
+        description: "Tests for standard user roles (Customer, Guest) are passing consistently, but we recommend adding tests for custom admin permission sets related to Payment Gateway to prevent future security regressions."
+      }
+    ],
+    summaryStats: {
+      environmentsMonitored: 1,
+      crossEnvIssues: 0,
+      passRate: 97
     }
-  ],
-  crossEnvironmentIssues: [],
-  aiInsights: [
-    {
-      title: "Loan Application Process Issues",
-      description: "The Loan Application has 3 failing tests related to approval process validation. These failures are caused by a recent field dependency change in the Winter '25 release that affects required fields in the approval process."
+  };
+  
+  // Mock data for sandbox
+  const sandboxData: EnvironmentData = {
+    environmentCard: {
+      name: "Full Sandbox",
+      testsRun: 647,
+      passRate: 83,
+      flakyTests: 17,
+      aiScore: 68,
+      refreshDate: "Apr 18, 2025 (6 days ago)",
+      dataVolume: "Full Production Copy"
     },
-    {
-      title: "Continuous Integration Impact",
-      description: "Recent CI pipeline improvements have resulted in more consistent test runs in Production deployments. Pass rate has improved from 94% to 97% after implementing proper data seeding in deployment scripts."
-    },
-    {
-      title: "Production Permission Testing",
-      description: "Tests for standard profiles (Marketing User, Sales User) are passing consistently, but we recommend adding tests for custom permission sets related to Loan Application to prevent future regressions."
+    moduleHealthData: [
+      { 
+        module: "Product Catalog", 
+        totalTests: 87, 
+        failures: 9, 
+        flakyTests: 3, 
+        confidenceScore: 82, 
+        status: "Needs Monitoring" 
+      },
+      { 
+        module: "Shopping Cart", 
+        totalTests: 112, 
+        failures: 8, 
+        flakyTests: 4, 
+        confidenceScore: 86, 
+        status: "Needs Monitoring" 
+      },
+      { 
+        module: "User Authentication", 
+        totalTests: 94, 
+        failures: 12, 
+        flakyTests: 2, 
+        confidenceScore: 79, 
+        status: "Needs Monitoring" 
+      },
+      { 
+        module: "Checkout Process", 
+        totalTests: 76, 
+        failures: 17, 
+        flakyTests: 3, 
+        confidenceScore: 74, 
+        status: "Unstable" 
+      },
+      { 
+        module: "Payment Gateway", 
+        totalTests: 98, 
+        failures: 29, 
+        flakyTests: 4, 
+        confidenceScore: 52, 
+        status: "Critical" 
+      },
+      { 
+        module: "Customer Support", 
+        totalTests: 62, 
+        failures: 11, 
+        flakyTests: 1, 
+        confidenceScore: 77, 
+        status: "Needs Monitoring" 
+      },
+      { 
+        module: "Inventory Management", 
+        totalTests: 68, 
+        failures: 16, 
+        flakyTests: 0, 
+        confidenceScore: 64, 
+        status: "Unstable" 
+      },
+      { 
+        module: "User Reviews", 
+        totalTests: 50, 
+        failures: 5, 
+        flakyTests: 0, 
+        confidenceScore: 82, 
+        status: "Needs Monitoring" 
+      }
+    ],
+    crossEnvironmentIssues: [
+      {
+        title: "Payment Gateway Authorization Failure",
+        description: "Payment authorization tests for credit cards fail in Sandbox but pass in Production. AI detected missing API credentials in the test setup that only manifest with real transaction volume.",
+        impact: "High",
+        environments: ["Sandbox"]
+      },
+      {
+        title: "Checkout Process Timeout",
+        description: "Checkout process tests time out after 120 seconds in Sandbox but complete in ~45 seconds in Production. Analysis shows database query timeouts being reached due to complex cart calculations with large order volumes.",
+        impact: "Critical",
+        environments: ["Sandbox"]
+      },
+      {
+        title: "User Authentication Failure",
+        description: "Social login authentication tests fail intermittently in Sandbox. AI detected OAuth configuration differences between Production and Sandbox affecting third-party authentication.",
+        impact: "Medium",
+        environments: ["Sandbox"]
+      },
+      {
+        title: "Product Catalog Search Issues",
+        description: "Tests involving elasticsearch for product search pass in Production but fail in Sandbox. Appears related to index replication timing that behaves differently with full catalog data volumes.",
+        impact: "Medium",
+        environments: ["Sandbox"]
+      }
+    ],
+    aiInsights: [
+      {
+        title: "Inventory Management Performance Bottlenecks",
+        description: "Inventory update tests are consistently hitting database query limits during high-volume operations. 16 tests are failing due to complex stock allocation rules that trigger excessive database queries."
+      },
+      {
+        title: "Payment Gateway Workflow Issues",
+        description: "Payment integration tests have critical failures due to transaction timeouts. The PaymentProcessor.js file contains nested API calls that are causing 'Transaction timeout exceeded' errors."
+      },
+      {
+        title: "Post-Refresh Data Loading Contention",
+        description: "Several tests are failing due to resource contention from post-refresh data imports. Tests run within 48 hours of sandbox refresh show 23% lower pass rates due to background indexing affecting database performance."
+      },
+      {
+        title: "GraphQL Query Complexity Impact",
+        description: "Recent migration from REST API to GraphQL has introduced 7 new unstable tests. Query debugging reveals complex nested queries causing 'Response time limit exceeded' errors that don't appear in Production."
+      }
+    ],
+    summaryStats: {
+      environmentsMonitored: 1,
+      crossEnvIssues: 4,
+      passRate: 83
     }
-  ],
-  summaryStats: {
-    environmentsMonitored: 1,
-    crossEnvIssues: 0,
-    passRate: 97
-  }
-};
-
-// Mock data for sandbox
-const sandboxData: EnvironmentData = {
-  environmentCard: {
-    name: "Full Sandbox",
-    testsRun: 647,
-    passRate: 83,
-    flakyTests: 17,
-    aiScore: 68,
-    refreshDate: "Apr 18, 2025 (6 days ago)",
-    dataVolume: "Full Production Copy"
-  },
-  moduleHealthData: [
-    { 
-      module: "Lead Management", 
-      totalTests: 87, 
-      failures: 9, 
-      flakyTests: 3, 
-      confidenceScore: 82, 
-      status: "Needs Monitoring" 
-    },
-    { 
-      module: "Opportunity Pipeline", 
-      totalTests: 112, 
-      failures: 8, 
-      flakyTests: 4, 
-      confidenceScore: 86, 
-      status: "Needs Monitoring" 
-    },
-    { 
-      module: "Account & Contact", 
-      totalTests: 94, 
-      failures: 12, 
-      flakyTests: 2, 
-      confidenceScore: 79, 
-      status: "Needs Monitoring" 
-    },
-    { 
-      module: "Quote & Contract", 
-      totalTests: 76, 
-      failures: 17, 
-      flakyTests: 3, 
-      confidenceScore: 74, 
-      status: "Unstable" 
-    },
-    { 
-      module: "Loan Application", 
-      totalTests: 98, 
-      failures: 29, 
-      flakyTests: 4, 
-      confidenceScore: 52, 
-      status: "Critical" 
-    },
-    { 
-      module: "Service Cloud Cases", 
-      totalTests: 62, 
-      failures: 11, 
-      flakyTests: 1, 
-      confidenceScore: 77, 
-      status: "Needs Monitoring" 
-    },
-    { 
-      module: "CPQ (Configure, Price, Quote)", 
-      totalTests: 68, 
-      failures: 16, 
-      flakyTests: 0, 
-      confidenceScore: 64, 
-      status: "Unstable" 
-    },
-    { 
-      module: "Community Portal", 
-      totalTests: 50, 
-      failures: 5, 
-      flakyTests: 0, 
-      confidenceScore: 82, 
-      status: "Needs Monitoring" 
-    }
-  ],
-  crossEnvironmentIssues: [
-    {
-      title: "Loan Application Approval Process Failure",
-      description: "Approval process tests for Loan Application fail in Sandbox but pass in Production. AI detected missing field dependencies in the test data setup that only manifest in full data volume tests.",
-      impact: "High",
-      environments: ["Sandbox"]
-    },
-    {
-      title: "Quote Generation Timeout",
-      description: "Quote generation tests time out after 120 seconds in Sandbox but complete in ~45 seconds in Production. Analysis shows CPU time limits being reached due to complex pricing calculations with large data sets.",
-      impact: "Critical",
-      environments: ["Sandbox"]
-    },
-    {
-      title: "Community Portal Authentication Failure",
-      description: "Community portal login tests fail intermittently in Sandbox. AI detected session configuration differences between Production and Sandbox affecting Experience Cloud authentication.",
-      impact: "Medium",
-      environments: ["Sandbox"]
-    },
-    {
-      title: "Opportunity Sharing Calculation Issues",
-      description: "Tests involving custom sharing rules for Opportunities pass in Production but fail in Sandbox. Appears related to territory management calculations that behave differently with full data volumes.",
-      impact: "Medium",
-      environments: ["Sandbox"]
-    }
-  ],
-  aiInsights: [
-    {
-      title: "CPQ Performance Bottlenecks",
-      description: "Configure, Price, Quote (CPQ) process tests are consistently hitting governor limits in the pricing calculation phase. 16 tests are failing due to complex product configuration rules that trigger excessive SOQL queries."
-    },
-    {
-      title: "Loan Application Workflow Issues",
-      description: "Loan Application approval processes have critical failures due to trigger recursion. The ApprovalProcessTrigger.cls file contains nested DML operations that are causing 'System.LimitException: Too many SOQL queries' errors."
-    },
-    {
-      title: "Post-Refresh Batch Apex Contention",
-      description: "Several tests are failing due to resource contention from post-refresh batch jobs. Tests run within 48 hours of sandbox refresh show 23% lower pass rates due to background processing affecting available governor limits."
-    },
-    {
-      title: "Flow Builder Complexity Impact",
-      description: "Recent migration from Process Builder to Flow has introduced 7 new unstable tests. Flow debugging reveals complex decision elements causing 'CPU time limit exceeded' errors that don't appear in Production."
-    }
-  ],
-  summaryStats: {
-    environmentsMonitored: 1,
-    crossEnvIssues: 4,
-    passRate: 83
-  }
-};
+  };
 
 // Helper function to get status badge variant
 const getStatusBadgeVariant = (status: string): "default" | "destructive" | "outline" | "secondary" => {
