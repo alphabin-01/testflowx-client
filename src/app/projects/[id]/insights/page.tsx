@@ -18,7 +18,7 @@ export default function InsightsPage() {
                     </p>
                 </div>
 
-                <SalesforceEnvironmentInsights projectId={id as string} />
+                <SalesforceEnvironmentInsights />
             </div>
         </ApiKeyCheck>
     );
