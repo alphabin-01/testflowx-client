@@ -151,7 +151,7 @@ const productionData: EnvironmentData = {
     },
     {
       title: "Production Permission Testing",
-      description: "Tests for standard profiles (Marketing User, Sales User) are passing consistently, but we recommend adding tests for custom permission sets related to Loan_Application__c to prevent future regressions."
+      description: "Tests for standard profiles (Marketing User, Sales User) are passing consistently, but we recommend adding tests for custom permission sets related to Loan Application to prevent future regressions."
     }
   ],
   summaryStats: {
@@ -241,7 +241,7 @@ const sandboxData: EnvironmentData = {
   crossEnvironmentIssues: [
     {
       title: "Loan Application Approval Process Failure",
-      description: "Approval process tests for Loan_Application__c fail in Sandbox but pass in Production. AI detected missing field dependencies in the test data setup that only manifest in full data volume tests.",
+      description: "Approval process tests for Loan Application fail in Sandbox but pass in Production. AI detected missing field dependencies in the test data setup that only manifest in full data volume tests.",
       impact: "High",
       environments: ["Sandbox"]
     },
@@ -271,7 +271,7 @@ const sandboxData: EnvironmentData = {
     },
     {
       title: "Loan Application Workflow Issues",
-      description: "Loan_Application__c approval processes have critical failures due to trigger recursion. The ApprovalProcessTrigger.cls file contains nested DML operations that are causing 'System.LimitException: Too many SOQL queries' errors."
+      description: "Loan Application approval processes have critical failures due to trigger recursion. The ApprovalProcessTrigger.cls file contains nested DML operations that are causing 'System.LimitException: Too many SOQL queries' errors."
     },
     {
       title: "Post-Refresh Batch Apex Contention",
