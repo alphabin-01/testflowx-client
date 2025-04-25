@@ -9,6 +9,19 @@ module.exports = {
     theme: {
         extend: {
             colors: {
+                gray: {
+                  50: '#ffffff',
+                  100: '#efefef',
+                  200: '#dcdcdc',
+                  300: '#bdbdbd',
+                  400: '#9b9b9b',
+                  500: '#7c7c7c',
+                  600: '#656565',
+                  700: '#525252',
+                  800: '#464646',
+                  900: '#292929',
+                  950: '#292929',
+                },
                 border: 'var(--border)',
                 input: 'var(--input)',
                 ring: 'var(--ring)',

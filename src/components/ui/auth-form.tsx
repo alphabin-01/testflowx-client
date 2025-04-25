@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { z } from "zod"
 import Link from "next/link"
+import { LockIcon, MailIcon, UserIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,7 +35,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
-        // Clear the error for this field when user starts typing
         if (errors[name]) {
             setErrors((prev) => {
                 const newErrors = { ...prev }
@@ -75,7 +75,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         try {
             if (mode === "login") {
                 await login(formData.email, formData.password)
-                // No need to redirect, the login function handles it
             } else {
                 await signup(
                     formData.email,
@@ -83,105 +82,145 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
                     formData.firstName,
                     formData.lastName
                 )
-                // No need to redirect, the signup function handles it
             }
-        } catch {
-            toast.error("Authentication failed. Please try again.")
+        } catch (error) {
+            console.log(`Error: ${error}`);
         } finally {
             setIsLoading(false)
         }
     }
 
     return (
-        <div className="mx-auto w-full max-w-md space-y-6">
-            <div className="space-y-2 text-center">
-                <h1 className="text-3xl font-bold">
+        <div className="w-full max-w-md mx-auto p-6 sm:p-8 bg-white dark:bg-gray-800 rounded-xl shadow-2xl transform transition-all">
+            <div className="space-y-4 text-center">
+                <div className="flex justify-center">
+                    <div className="rounded-full bg-primary/10 p-4 backdrop-blur-sm">
+                        <UserIcon size={28} className="text-primary" />
+                    </div>
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                     {mode === "login" ? "Welcome back" : "Create an account"}
                 </h1>
-                <p className="text-gray-500 dark:text-gray-400">
+                <p className="text-sm sm:text-base text-muted-foreground">
                     {mode === "login"
                         ? "Enter your credentials to sign in to your account"
                         : "Enter your information to create an account"}
                 </p>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            
+            <div className="my-8 h-px bg-border" />
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
                 {mode === "signup" && (
-                    <>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="firstName">First name</Label>
-                                <Input
-                                    id="firstName"
-                                    name="firstName"
-                                    placeholder="John"
-                                    value={formData.firstName}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
-                                />
-                                {errors.firstName && <p className="text-sm text-red-500">{errors.firstName}</p>}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="lastName">Last name</Label>
-                                <Input
-                                    id="lastName"
-                                    name="lastName"
-                                    placeholder="Doe"
-                                    value={formData.lastName}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
-                                />
-                                {errors.lastName && <p className="text-sm text-red-500">{errors.lastName}</p>}
-                            </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="firstName" className="text-sm font-medium">First name</Label>
+                            <Input
+                                id="firstName"
+                                name="firstName"
+                                placeholder="John"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                                className={`h-11 transition-all ${errors.firstName ? 'border-destructive ring-1 ring-destructive' : ''}`}
+                            />
+                            {errors.firstName && <p className="text-xs font-medium text-destructive">{errors.firstName}</p>}
                         </div>
-                    </>
+                        <div className="space-y-2">
+                            <Label htmlFor="lastName" className="text-sm font-medium">Last name</Label>
+                            <Input
+                                id="lastName"
+                                name="lastName"
+                                placeholder="Doe"
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                disabled={isLoading}
+                                className={`h-11 transition-all ${errors.lastName ? 'border-destructive ring-1 ring-destructive' : ''}`}
+                            />
+                            {errors.lastName && <p className="text-xs font-medium text-destructive">{errors.lastName}</p>}
+                        </div>
+                    </div>
                 )}
+                
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="name@example.com"
-                        value={formData.email}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                    />
-                    {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                    <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                    <div className="relative">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <MailIcon size={18} className="text-muted-foreground" />
+                        </div>
+                        <Input
+                            id="email"
+                            name="email"
+                            type="email"
+                            placeholder="name@example.com"
+                            value={formData.email}
+                            onChange={handleChange}
+                            disabled={isLoading}
+                            className={`pl-10 h-11 transition-all ${errors.email ? 'border-destructive ring-1 ring-destructive' : ''}`}
+                        />
+                    </div>
+                    {errors.email && <p className="text-xs font-medium text-destructive">{errors.email}</p>}
                 </div>
+
                 <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={formData.password}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                    />
-                    {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                    </div>
+                    <div className="relative">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <LockIcon size={18} className="text-muted-foreground" />
+                        </div>
+                        <Input
+                            id="password"
+                            name="password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={formData.password}
+                            onChange={handleChange}
+                            disabled={isLoading}
+                            className={`pl-10 h-11 transition-all ${errors.password ? 'border-destructive ring-1 ring-destructive' : ''}`}
+                        />
+                    </div>
+                    {errors.password && <p className="text-xs font-medium text-destructive">{errors.password}</p>}
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+
+                <Button 
+                    type="submit" 
+                    className="w-full h-11 text-base font-semibold transition-all"
+                    disabled={isLoading}
+                >
                     {isLoading ? "Processing..." : mode === "login" ? "Sign In" : "Sign Up"}
                 </Button>
             </form>
-            <div className="text-center">
-                {mode === "login" ? (
-                    <p className="text-sm">
-                        Don&apos;t have an account?{" "}
-                        <Link href="/sign-up" className="underline">
-                            Sign up
-                        </Link>
-                    </p>
-                ) : (
-                    <p className="text-sm">
-                        Already have an account?{" "}
-                        <Link href="/sign-in" className="underline">
-                            Sign in
-                        </Link>
-                    </p>
-                )}
+
+            <div className="mt-8 space-y-6">
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-border"></div>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-4 text-muted-foreground">Or continue with</span>
+                    </div>
+                </div>
+
+                <div className="text-center">
+                    {mode === "login" ? (
+                        <p className="text-sm text-muted-foreground">
+                            Don&apos;t have an account?{" "}
+                            <Link href="/sign-up" className="font-medium text-primary hover:underline transition-colors">
+                                Sign up
+                            </Link>
+                        </p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            Already have an account?{" "}
+                            <Link href="/sign-in" className="font-medium text-primary hover:underline transition-colors">
+                                Sign in
+                            </Link>
+                        </p>
+                    )}
+                </div>
             </div>
         </div>
     )
-} 
+}

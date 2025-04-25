@@ -109,8 +109,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             throw new Error(res.status === STATUS.ERROR ? res.error.message : "Login failed")
         } catch (error) {
-            console.error('Login error:', error)
-            toast.error(error instanceof Error ? error.message : "Login failed. Please check your credentials.")
             throw error
         } finally {
             setIsLoading(false)
@@ -133,7 +131,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             throw new Error(res.status === STATUS.ERROR ? res.error.message : "Signup failed")
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Signup failed. Please try again.")
             throw error
         } finally {
             setIsLoading(false)
