@@ -15,7 +15,7 @@ const CURRENT_ENV = process.env.NEXT_PUBLIC_API_ENV || ENV.DEV;
 
 // Base API URLs for different environments
 const API_URLS = {
-    [ENV.DEV]: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+    [ENV.DEV]: process.env.NEXT_PUBLIC_DEV_API_URL || 'http://localhost:3000/api',
     [ENV.STAGING]: process.env.NEXT_PUBLIC_STAGING_API_URL || 'https://staging-api.example.com/api',
     [ENV.PROD]: process.env.NEXT_PUBLIC_PROD_API_URL || 'https://api.example.com/api'
 };
