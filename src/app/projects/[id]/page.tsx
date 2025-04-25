@@ -11,7 +11,7 @@ export default function ProjectPage() {
         <ApiKeyCheck projectId={id as string}>
             <div className="flex flex-col gap-8 p-8">
                 <div className="flex flex-col space-y-1.5">
-                    <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
+                    <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
                     <p className="text-muted-foreground">
                         Visualize your test metrics and performance
                     </p>
