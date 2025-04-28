@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
         delete: (id: string) => `/projects/${id}`,
     },
     auth: {
+        ping: '/health',
         login: '/auth/login',
         register: '/auth/register',
         logout: '/auth/logout',

@@ -194,36 +194,6 @@ const SystemInfo = ({ stats }: { stats: any }) => {
     );
 };
 
-// Loading state component
-const LoadingState = ({ breadcrumbLinks }) => (
-    <div className="mx-10 py-6">
-        <div className="mb-4">
-            <BreadcrumbNav links={breadcrumbLinks} />
-        </div>
-        <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2">
-                <Loader />
-                <p className="text-muted-foreground">Loading test run data...</p>
-            </div>
-        </div>
-    </div>
-);
-
-// Error state component
-const ErrorState = ({ breadcrumbLinks, error }) => (
-    <div className="mx-10 py-6">
-        <div className="mb-4">
-            <BreadcrumbNav links={breadcrumbLinks} />
-        </div>
-        <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center gap-2">
-                <AlertCircle className="h-8 w-8 text-red-500" />
-                <p className="text-red-500 font-medium">Error loading test run</p>
-                <p className="text-muted-foreground">{error}</p>
-            </div>
-        </div>
-    </div>
-);
 
 // Main TestRunPage component
 export default function TestRunPage({ projectId }: { projectId: string }) {
