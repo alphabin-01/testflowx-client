@@ -2,7 +2,6 @@
 
 import { API_ENDPOINTS } from "@/lib/api"
 import { apiRequest, STATUS } from "@/lib/api-client"
-import { getPingUrl } from "@/lib/api-config"
 import { useRouter } from "next/navigation"
 import { createContext, ReactNode, useContext, useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -44,11 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
-
-    setInterval(() => {
-        fetch(getPingUrl())
-          .catch(error => console.error('Error pinging server', error));
-      }, 5 * 60 * 1000); // every 5 minutes
 
     useEffect(() => {
         const checkSession = async () => {
