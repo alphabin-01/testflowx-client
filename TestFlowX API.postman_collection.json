@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "086e5278-7d77-4b30-8ac8-db0c30fff306",
-		"name": "TestFlowX API",
-		"description": "API collection for TestFlowX - a metrics collection and visualization system for Playwright tests",
+		"name": "TestReport API",
+		"description": "API collection for TestReport - a metrics collection and visualization system for Playwright tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "36924227",
 		"_collection_link": "https://alphabin.postman.co/workspace/My-Workspace~5799c2de-4270-410a-81ea-4f6bc4496d28/collection/34726550-086e5278-7d77-4b30-8ac8-db0c30fff306?action=share&source=collection_link&creator=36924227"

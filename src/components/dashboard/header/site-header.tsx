@@ -43,10 +43,8 @@ export function SiteHeader({ className, ...props }: React.HTMLAttributes<HTMLEle
         </Button>
       )}
       <div className="flex items-center">
-        <Link href="/" className="text-base font-semibold">TestFlowX</Link>
         {currentProject && (
           <div className="flex items-center">
-            <span className="text-muted-foreground mx-2">/</span>
             <Link href={`/projects/${currentProject.id}`} className="text-base font-medium">{currentProject.name}</Link>
           </div>
         )}

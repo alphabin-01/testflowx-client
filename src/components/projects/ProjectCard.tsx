@@ -29,13 +29,14 @@ export function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardPr
     };
 
     return (
-        <Card className="overflow-hidden border border-border/40 bg-card hover:border-border/60 transition-all duration-200 rounded-lg shadow-sm">
+        <Card className="group overflow-hidden border border-border/40 bg-card hover:border-primary/20 hover:shadow-md transition-all duration-200 rounded-lg shadow-sm">
             <CardHeader className="">
-                <div className="flex justify-between items-start mb-1">
-                    <h3 className="font-medium text-lg tracking-tight line-clamp-1">{project.name}</h3>
+                <div className="flex justify-between items-start mb-1.5">
+                    <h3 className="font-semibold text-lg tracking-tight line-clamp-1 group-hover:text-primary transition-colors duration-200">{project.name}</h3>
                     {project.settings?.notificationsEnabled && (
-                        <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-0 font-normal">
-                            <BellIcon className="h-3 w-3 mr-1" />
+                        <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-0 font-normal flex items-center gap-1">
+                            <BellIcon className="h-3 w-3" />
+                            <span>Notifications</span>
                         </Badge>
                     )}
                 </div>
@@ -47,7 +48,7 @@ export function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardPr
                 )}
             </CardHeader>
 
-            <CardContent className="px-5 py-3">
+            <CardContent className="px-5 py-4">
                 <div className="min-h-[40px]">
                     <p className="text-sm text-muted-foreground line-clamp-3">
                         {truncateDescription(project.description || "")}
@@ -55,19 +56,22 @@ export function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardPr
                 </div>
 
                 {project.settings?.retentionPeriod && (
-                    <div className="mt-3 pt-3 border-t border-border/30">
+                    <div className="mt-4 pt-3 border-t border-border/30">
                         <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">Retention period</span>
-                            <span className="font-medium">{project.settings.retentionPeriod} days</span>
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                <span>Retention period</span>
+                            </div>
+                            <span className="font-medium text-primary">{project.settings.retentionPeriod} days</span>
                         </div>
                     </div>
                 )}
             </CardContent>
 
-            <CardFooter className="flex justify-between items-center bg-muted/20">
+            <CardFooter className="flex justify-between items-center bg-muted/20 group-hover:bg-muted/30 transition-colors duration-200">
                 <Button
                     onClick={() => onView(project.id)}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm group-hover:shadow transition-all duration-200"
                     size="sm"
                 >
                     <span>View Project</span>
@@ -78,7 +82,7 @@ export function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardPr
                         variant="outline"
                         size="icon"
                         onClick={() => onEdit(project)}
-                        className="h-8 w-8 border-border/50 bg-background hover:bg-background/80"
+                        className="h-8 w-8 border-border/50 bg-background hover:bg-primary/5 hover:border-primary/30 transition-colors duration-200"
                         title="Edit project"
                     >
                         <Edit className="h-3.5 w-3.5 text-muted-foreground" />
@@ -87,7 +91,7 @@ export function ProjectCard({ project, onView, onEdit, onDelete }: ProjectCardPr
                         variant="outline"
                         size="icon"
                         onClick={() => onDelete(project.id)}
-                        className="h-8 w-8 border-border/50 bg-background hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
+                        className="h-8 w-8 border-border/50 bg-background hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors duration-200"
                         title="Delete project"
                     >
                         <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />

@@ -45,7 +45,7 @@ export function useTestRun() {
 
     // Track in-flight requests to prevent duplicates
     const requestInProgress = useRef<string | null>(null);
-    
+
     // Track if we've initialized from URL params yet
     const initializedFromUrl = useRef(false);
 
@@ -70,27 +70,27 @@ export function useTestRun() {
     // This function updates the URL without triggering a re-render
     const updateUrlWithFilters = useCallback((newFilters: TestRunFilters, page: number) => {
         const params = new URLSearchParams();
-        
+
         if (newFilters.status && newFilters.status !== 'All') {
             params.set('status', newFilters.status);
         }
-        
+
         if (newFilters.branch) {
             params.set('branch', newFilters.branch);
         }
-        
+
         if (newFilters.tags && newFilters.tags.length > 0) {
             params.set('tags', newFilters.tags.join(','));
         }
-        
+
         if (newFilters.searchTerm) {
             params.set('search', newFilters.searchTerm);
         }
-        
+
         if (page > 1) {
             params.set('page', page.toString());
         }
-        
+
         // Replace the URL with the new params - using replace to avoid adding to history
         const newUrl = `/projects/${projectId}/tests${params.toString() ? `?${params.toString()}` : ''}`;
         router.replace(newUrl, { scroll: false });
@@ -115,7 +115,7 @@ export function useTestRun() {
         if (initializedFromUrl.current) {
             updateUrlWithFilters(currentFilters, page);
         }
-        
+
         // Create a unique cache key based on all parameters
         const filterString = JSON.stringify(currentFilters);
         const cacheKey = `${projectId}-${page}-${limit}-${filterString}`;
@@ -154,16 +154,16 @@ export function useTestRun() {
             if (currentFilters.status && currentFilters.status !== 'All') {
                 params.status = currentFilters.status;
             }
-            
+
             if (currentFilters.branch) {
                 params.branch = currentFilters.branch;
             }
-            
+
             if (currentFilters.tags && currentFilters.tags.length > 0) {
                 params.tags = currentFilters.tags.join(',');
             }
-            
-            
+
+
             if (currentFilters.searchTerm) {
                 params.search = currentFilters.searchTerm;
             }
@@ -215,7 +215,7 @@ export function useTestRun() {
             const timer = setTimeout(() => {
                 fetchTestRuns(1, pagination.limit, filters);
             }, 300);
-            
+
             return () => clearTimeout(timer);
         }
     }, [filters, fetchTestRuns, pagination.limit]);
@@ -226,7 +226,7 @@ export function useTestRun() {
         if (initializedFromUrl.current) {
             return;
         }
-        
+
         const page = parseInt(searchParams.get('page') || '1', 10);
         const initialFilters: TestRunFilters = {
             status: searchParams.get('status') || 'All',
@@ -234,13 +234,13 @@ export function useTestRun() {
             tags: searchParams.get('tags') ? searchParams.get('tags')!.split(',') : [],
             searchTerm: searchParams.get('search') || ''
         };
-        
+
         // Update state without triggering useEffect
         setFilters(initialFilters);
-        
+
         // Set initialization flag to true
         initializedFromUrl.current = true;
-        
+
         // Initial data fetch
         fetchTestRuns(page, pagination.limit, initialFilters);
     }, [searchParams, fetchTestRuns, pagination.limit]);
@@ -310,6 +310,22 @@ export function useTestRun() {
         getFilteredRuns,
         clearCache,
         applyFilters,
-        goToPage
+        goToPage,
+        setTestRuns
     };
 }
+
+// Add delete function
+export const deleteTestRun = async (runId: string) => {
+    try {
+        const res = await apiRequest(API_ENDPOINTS.testRuns.deleteTestRun(runId), {
+            method: 'DELETE',
+        });
+        if (res.status === STATUS.SUCCESS) {
+            return res.data;
+        }
+        throw new Error(res.error.message);
+    } catch (error) {
+        throw error;
+    }
+};

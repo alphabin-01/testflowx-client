@@ -22,6 +22,7 @@ import {
 import { useSidebarState } from "@/lib/sidebar-state"
 import { KeyIcon } from "lucide-react"
 import { useParams } from "next/navigation"
+import Link from "next/link"
 
 export function AppSidebar({
     variant = "inset",
@@ -84,9 +85,7 @@ export function AppSidebar({
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shadow-sm transition-colors hover:bg-primary/20">
                         <IconHome className="h-5 w-5 text-primary" />
                     </div>
-                    <span className="text-md font-semibold">
-                        TestPluse
-                    </span>
+                    <Link href="/" className="text-base font-semibold">TestReport</Link>
                 </div>
                 <Button
                     variant="ghost"

@@ -35,6 +35,7 @@ export const API_ENDPOINTS = {
     testRuns: {
         getTestRunById: (testRunId: string) => `/test-runs/${testRunId}`,
         getByProjectId: (projectId: string) => `/projects/${projectId}/test-runs`,
+        deleteTestRun: (testRunId: string) => `/test-runs/${testRunId}`,
     },
     insights: {
         getByProjectId: (projectId: string) => `/projects/${projectId}/insights`,

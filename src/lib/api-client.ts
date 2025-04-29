@@ -4,9 +4,6 @@ import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { getApiUrl, DEFAULT_TIMEOUT } from './api-config';
 
-
-
-
 /**
  * API response status codes
  */

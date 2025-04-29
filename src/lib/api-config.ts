@@ -15,12 +15,10 @@ const CURRENT_ENV = process.env.NEXT_PUBLIC_API_ENV || ENV.DEV;
 
 // Base API URLs for different environments
 const API_URLS = {
-    [ENV.DEV]: process.env.NEXT_PUBLIC_DEV_API_URL || 'http://localhost:3000/api',
-    [ENV.STAGING]: process.env.NEXT_PUBLIC_STAGING_API_URL || 'https://staging-api.example.com/api',
-    [ENV.PROD]: process.env.NEXT_PUBLIC_PROD_API_URL || 'https://api.example.com/api'
+    [ENV.DEV]: process.env.NEXT_PUBLIC_DEV_API_URL || 'http://localhost:3000',
+    [ENV.STAGING]: process.env.NEXT_PUBLIC_STAGING_API_URL || 'https://staging-api.example.com',
+    [ENV.PROD]: process.env.NEXT_PUBLIC_PROD_API_URL || 'https://api.example.com'
 };
-
-export const getPingUrl = () => `${API_URLS[CURRENT_ENV]}/health`;
 
 const getBaseUrl = () => `${API_URLS[CURRENT_ENV]}/api`;
 
