@@ -5,30 +5,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
-    AlertCircle,
-    AlertTriangle,
-    BarChart2,
-    Brain,
-    Calendar,
-    CheckCircle,
-    Clock,
-    Database,
-    Server,
-    Sparkles
+  AlertCircle,
+  AlertTriangle,
+  BarChart2,
+  Brain,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Database,
+  Server,
+  Sparkles
 } from "lucide-react";
 import { useState } from "react";
 import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    Cell,
-    Legend,
-    Pie,
-    PieChart,
-    Tooltip as RechartsTooltip,
-    ResponsiveContainer,
-    XAxis,
-    YAxis
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  XAxis,
+  YAxis
 } from 'recharts';
 
 // Types for Salesforce environment data
@@ -79,214 +79,206 @@ interface EnvironmentData {
 
 // Mock data for production
 const productionData: EnvironmentData = {
-    environmentCard: {
-      name: "Production",
-      testsRun: 138,
-      passRate: 97,
-      flakyTests: 0,
-      aiScore: 95,
-      refreshDate: "Last updated 2 minutes ago",
-      dataVolume: "Live Production Data"
+  "environmentCard": {
+    "name": "Production",
+    "testsRun": 3,
+    "passRate": 85.15,
+    "flakyTests": 2,
+    "aiScore": 80,
+    "refreshDate": "Last updated 2 minutes ago",
+    "dataVolume": "Live Production Data"
+  },
+  "moduleHealthData": [
+    {
+      "module": "Mark all as completed",
+      "totalTests": 10,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
     },
-    moduleHealthData: [
-      { 
-        module: "Product Catalog", 
-        totalTests: 26, 
-        failures: 0, 
-        flakyTests: 0, 
-        confidenceScore: 98, 
-        status: "Stable" 
-      },
-      { 
-        module: "Shopping Cart", 
-        totalTests: 34, 
-        failures: 1, 
-        flakyTests: 0, 
-        confidenceScore: 95, 
-        status: "Stable" 
-      },
-      { 
-        module: "User Authentication", 
-        totalTests: 28, 
-        failures: 0, 
-        flakyTests: 0, 
-        confidenceScore: 97, 
-        status: "Stable" 
-      },
-      { 
-        module: "Checkout Process", 
-        totalTests: 18, 
-        failures: 0, 
-        flakyTests: 0, 
-        confidenceScore: 96, 
-        status: "Stable" 
-      },
-      { 
-        module: "Payment Gateway", 
-        totalTests: 21, 
-        failures: 3, 
-        flakyTests: 0, 
-        confidenceScore: 89, 
-        status: "Needs Monitoring" 
-      },
-      { 
-        module: "Customer Support", 
-        totalTests: 11, 
-        failures: 0, 
-        flakyTests: 0, 
-        confidenceScore: 95, 
-        status: "Stable" 
-      }
-    ],
-    crossEnvironmentIssues: [],
-    aiInsights: [
-      {
-        title: "Payment Gateway Integration Issues",
-        description: "The Payment Gateway has 3 failing tests related to transaction validation. These failures are caused by a recent API change in the Spring '25 update that affects required parameters in the payment verification process."
-      },
-      {
-        title: "Continuous Integration Impact",
-        description: "Recent CI pipeline improvements have resulted in more consistent test runs in Production deployments. Pass rate has improved from 94% to 97% after implementing proper test data seeding in deployment scripts."
-      },
-      {
-        title: "Production Security Testing",
-        description: "Tests for standard user roles (Customer, Guest) are passing consistently, but we recommend adding tests for custom admin permission sets related to Payment Gateway to prevent future security regressions."
-      }
-    ],
-    summaryStats: {
-      environmentsMonitored: 1,
-      crossEnvIssues: 0,
-      passRate: 97
-    }
-  };
-  
-  // Mock data for sandbox
-  const sandboxData: EnvironmentData = {
-    environmentCard: {
-      name: "Full Sandbox",
-      testsRun: 647,
-      passRate: 83,
-      flakyTests: 17,
-      aiScore: 68,
-      refreshDate: "Apr 18, 2025 (6 days ago)",
-      dataVolume: "Full Production Copy"
+    {
+      "module": "Item",
+      "totalTests": 6,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
     },
-    moduleHealthData: [
-      { 
-        module: "Product Catalog", 
-        totalTests: 87, 
-        failures: 9, 
-        flakyTests: 3, 
-        confidenceScore: 82, 
-        status: "Needs Monitoring" 
-      },
-      { 
-        module: "Shopping Cart", 
-        totalTests: 112, 
-        failures: 8, 
-        flakyTests: 4, 
-        confidenceScore: 86, 
-        status: "Needs Monitoring" 
-      },
-      { 
-        module: "User Authentication", 
-        totalTests: 94, 
-        failures: 12, 
-        flakyTests: 2, 
-        confidenceScore: 79, 
-        status: "Needs Monitoring" 
-      },
-      { 
-        module: "Checkout Process", 
-        totalTests: 76, 
-        failures: 17, 
-        flakyTests: 3, 
-        confidenceScore: 74, 
-        status: "Unstable" 
-      },
-      { 
-        module: "Payment Gateway", 
-        totalTests: 98, 
-        failures: 29, 
-        flakyTests: 4, 
-        confidenceScore: 52, 
-        status: "Critical" 
-      },
-      { 
-        module: "Customer Support", 
-        totalTests: 62, 
-        failures: 11, 
-        flakyTests: 1, 
-        confidenceScore: 77, 
-        status: "Needs Monitoring" 
-      },
-      { 
-        module: "Inventory Management", 
-        totalTests: 68, 
-        failures: 16, 
-        flakyTests: 0, 
-        confidenceScore: 64, 
-        status: "Unstable" 
-      },
-      { 
-        module: "User Reviews", 
-        totalTests: 50, 
-        failures: 5, 
-        flakyTests: 0, 
-        confidenceScore: 82, 
-        status: "Needs Monitoring" 
-      }
-    ],
-    crossEnvironmentIssues: [
-      {
-        title: "Payment Gateway Authorization Failure",
-        description: "Payment authorization tests for credit cards fail in Sandbox but pass in Production. AI detected missing API credentials in the test setup that only manifest with real transaction volume.",
-        impact: "High",
-        environments: ["Sandbox"]
-      },
-      {
-        title: "Checkout Process Timeout",
-        description: "Checkout process tests time out after 120 seconds in Sandbox but complete in ~45 seconds in Production. Analysis shows database query timeouts being reached due to complex cart calculations with large order volumes.",
-        impact: "Critical",
-        environments: ["Sandbox"]
-      },
-      {
-        title: "User Authentication Failure",
-        description: "Social login authentication tests fail intermittently in Sandbox. AI detected OAuth configuration differences between Production and Sandbox affecting third-party authentication.",
-        impact: "Medium",
-        environments: ["Sandbox"]
-      },
-      {
-        title: "Product Catalog Search Issues",
-        description: "Tests involving elasticsearch for product search pass in Production but fail in Sandbox. Appears related to index replication timing that behaves differently with full catalog data volumes.",
-        impact: "Medium",
-        environments: ["Sandbox"]
-      }
-    ],
-    aiInsights: [
-      {
-        title: "Inventory Management Performance Bottlenecks",
-        description: "Inventory update tests are consistently hitting database query limits during high-volume operations. 16 tests are failing due to complex stock allocation rules that trigger excessive database queries."
-      },
-      {
-        title: "Payment Gateway Workflow Issues",
-        description: "Payment integration tests have critical failures due to transaction timeouts. The PaymentProcessor.js file contains nested API calls that are causing 'Transaction timeout exceeded' errors."
-      },
-      {
-        title: "Post-Refresh Data Loading Contention",
-        description: "Several tests are failing due to resource contention from post-refresh data imports. Tests run within 48 hours of sandbox refresh show 23% lower pass rates due to background indexing affecting database performance."
-      },
-      {
-        title: "GraphQL Query Complexity Impact",
-        description: "Recent migration from REST API to GraphQL has introduced 7 new unstable tests. Query debugging reveals complex nested queries causing 'Response time limit exceeded' errors that don't appear in Production."
-      }
-    ],
-    summaryStats: {
-      environmentsMonitored: 1,
-      crossEnvIssues: 4,
-      passRate: 83
+    {
+      "module": "Editing",
+      "totalTests": 14,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Counter",
+      "totalTests": 2,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Clear completed button",
+      "totalTests": 6,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Persistence",
+      "totalTests": 2,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Routing",
+      "totalTests": 10,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "example.spec.js",
+      "totalTests": 7,
+      "failures": 3,
+      "flakyTests": 2,
+      "confidenceScore": 97,
+      "status": "Stable"
     }
-  };
+  ],
+  "crossEnvironmentIssues": [],
+  "aiInsights": [
+    {
+      "title": "Performance Improvements",
+      "description": "Pass rate has improved significantly, with fewer flaky tests."
+    },
+    {
+      "title": "CI Pipeline Impact",
+      "description": "Recent CI improvements have led to higher test consistency."
+    }
+  ],
+  "summaryStats": {
+    "environmentsMonitored": 1,
+    "crossEnvIssues": 0,
+    "passRate": 85.15
+  }
+}
+
+// Mock data for sandbox
+const sandboxData: EnvironmentData = {
+  "environmentCard": {
+    "name": "Sandbox",
+    "testsRun": 3,
+    "passRate": 85.15,
+    "flakyTests": 2,
+    "aiScore": 68,
+    "refreshDate": "Last updated 6 days ago",
+    "dataVolume": "Full Production Copy"
+  },
+  "moduleHealthData": [
+    {
+      "module": "Mark all as completed",
+      "totalTests": 10,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Item",
+      "totalTests": 6,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Editing",
+      "totalTests": 14,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Counter",
+      "totalTests": 2,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Clear completed button",
+      "totalTests": 6,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Persistence",
+      "totalTests": 2,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "Routing",
+      "totalTests": 10,
+      "failures": 0,
+      "flakyTests": 0,
+      "confidenceScore": 100,
+      "status": "Stable"
+    },
+    {
+      "module": "example.spec.js",
+      "totalTests": 7,
+      "failures": 3,
+      "flakyTests": 2,
+      "confidenceScore": 97,
+      "status": "Stable"
+    }
+  ],
+  "crossEnvironmentIssues": [
+    {
+      "title": "API Changes Between Production and Sandbox",
+      "description": "Detected configuration differences impacting test results across environments.",
+      "impact": "High",
+      "environments": ["Sandbox"]
+    },
+    {
+      "title": "Database Query Issues in Sandbox",
+      "description": "Database issues are more frequent in Sandbox, affecting test execution times.",
+      "impact": "Medium",
+      "environments": ["Sandbox"]
+    }
+  ],
+  "aiInsights": [
+    {
+      "title": "Flaky Tests in Checkout Process",
+      "description": "Flaky tests are prominent in the Checkout Process module."
+    },
+    {
+      "title": "AI detected missing credentials in Payment Gateway",
+      "description": "The Payment Gateway tests are unstable in Sandbox due to missing API credentials."
+    }
+  ],
+  "summaryStats": {
+    "environmentsMonitored": 1,
+    "crossEnvIssues": 2,
+    "passRate": 85.15
+  }
+}
 
 // Helper function to get status badge variant
 const getStatusBadgeVariant = (status: string): "default" | "destructive" | "outline" | "secondary" => {
@@ -360,7 +352,7 @@ const EnvironmentOverviewCard = ({ data }: { data: EnvironmentCard }) => {
             </div>
             <p className="text-2xl font-bold">{data.testsRun}</p>
           </div>
-          
+
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Pass Rate</span>
@@ -368,7 +360,7 @@ const EnvironmentOverviewCard = ({ data }: { data: EnvironmentCard }) => {
             </div>
             <p className="text-2xl font-bold">{data.passRate}%</p>
           </div>
-          
+
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Flaky Tests</span>
@@ -376,7 +368,7 @@ const EnvironmentOverviewCard = ({ data }: { data: EnvironmentCard }) => {
             </div>
             <p className="text-2xl font-bold">{data.flakyTests}</p>
           </div>
-          
+
           <div className="p-4 bg-gray-50 rounded-lg">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Last Refresh</span>
@@ -385,7 +377,7 @@ const EnvironmentOverviewCard = ({ data }: { data: EnvironmentCard }) => {
             <p className="text-sm font-semibold mt-1">{data.refreshDate}</p>
           </div>
         </div>
-        
+
         <div className="text-sm text-gray-600 flex items-center mt-2">
           <Database className="h-4 w-4 mr-1" />
           <span>Data Volume: <span className="font-medium">{data.dataVolume}</span></span>
@@ -441,20 +433,20 @@ const ModuleHealthTable = ({ modules }: { modules: ModuleHealth[] }) => {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <Progress 
-                      value={module.confidenceScore} 
+                    <Progress
+                      value={module.confidenceScore}
                       className={cn(
                         "h-2 w-16",
                         module.confidenceScore >= 90 ? "[&>div]:bg-green-500" :
-                        module.confidenceScore >= 75 ? "[&>div]:bg-blue-500" :
-                        module.confidenceScore >= 60 ? "[&>div]:bg-amber-500" : "[&>div]:bg-red-500"
+                          module.confidenceScore >= 75 ? "[&>div]:bg-blue-500" :
+                            module.confidenceScore >= 60 ? "[&>div]:bg-amber-500" : "[&>div]:bg-red-500"
                       )}
                     />
                     <span className="text-sm">{module.confidenceScore}%</span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge 
+                  <Badge
                     variant={getStatusBadgeVariant(module.status)}
                     className="flex items-center gap-1"
                   >
@@ -516,7 +508,7 @@ const ModuleHealthChart = ({ modules }: { modules: ModuleHealth[] }) => {
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                   <XAxis type="number" domain={[0, 100]} />
                   <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-                  <RechartsTooltip 
+                  <RechartsTooltip
                     formatter={(value: any, name: any) => [`${value}%`, 'Confidence Score']}
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
@@ -539,13 +531,13 @@ const ModuleHealthChart = ({ modules }: { modules: ModuleHealth[] }) => {
                     radius={[0, 4, 4, 0]}
                   >
                     {confidenceData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
+                      <Cell
+                        key={`cell-${index}`}
                         fill={
                           entry.score >= 90 ? "#10b981" :
-                          entry.score >= 75 ? "#3b82f6" :
-                          entry.score >= 60 ? "#f59e0b" : 
-                          "#ef4444"
+                            entry.score >= 75 ? "#3b82f6" :
+                              entry.score >= 60 ? "#f59e0b" :
+                                "#ef4444"
                         }
                       />
                     ))}
@@ -554,7 +546,7 @@ const ModuleHealthChart = ({ modules }: { modules: ModuleHealth[] }) => {
               </ResponsiveContainer>
             </div>
           </div>
-          
+
           <div>
             <h3 className="text-sm font-medium mb-3">Module Status Distribution</h3>
             <div className="h-64 flex items-center justify-center">
@@ -580,12 +572,12 @@ const ModuleHealthChart = ({ modules }: { modules: ModuleHealth[] }) => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            
+
             <div className="mt-4 grid grid-cols-2 gap-2">
               {statusData.map((status, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
+                  <div
+                    className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   ></div>
                   <span className="text-sm">{status.name}: {status.value} modules</span>
@@ -734,7 +726,7 @@ const SummaryStats = ({ stats }: { stats: SummaryStats }) => {
               <p className="text-2xl font-bold">{stats.passRate}%</p>
             </div>
             <div className={`
-              ${stats.passRate >= 95 ? "bg-green-100" : 
+              ${stats.passRate >= 95 ? "bg-green-100" :
                 stats.passRate >= 80 ? "bg-amber-100" : "bg-red-100"} 
               p-3 rounded-full
             `}>
@@ -757,7 +749,7 @@ const SummaryStats = ({ stats }: { stats: SummaryStats }) => {
 export function SalesforceEnvironmentInsights() {
   const [activeEnvironment, setActiveEnvironment] = useState<"production" | "sandbox">("production");
   const currentData = activeEnvironment === "production" ? productionData : sandboxData;
-  
+
   return (
     <div className="">
       {/* Environment Selector */}
@@ -776,14 +768,14 @@ export function SalesforceEnvironmentInsights() {
             <div className="flex items-center gap-2">
               <Server className="h-4 w-4" />
               <span>Sandbox</span>
-              <Badge variant={sandboxData.environmentCard.passRate >= 90 ? "default" : "secondary"} 
+              <Badge variant={sandboxData.environmentCard.passRate >= 90 ? "default" : "secondary"}
                 className={`ml-1 ${sandboxData.environmentCard.passRate >= 90 ? "bg-green-500" : "bg-amber-500"}`}>
                 {sandboxData.environmentCard.passRate}%
               </Badge>
             </div>
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="production">
           <SummaryStats stats={productionData.summaryStats} />
           <EnvironmentOverviewCard data={productionData.environmentCard} />
@@ -798,7 +790,7 @@ export function SalesforceEnvironmentInsights() {
           <ModuleHealthChart modules={productionData.moduleHealthData} />
           <CrossEnvironmentIssues issues={productionData.crossEnvironmentIssues} />
         </TabsContent>
-        
+
         <TabsContent value="sandbox">
           <SummaryStats stats={sandboxData.summaryStats} />
           <EnvironmentOverviewCard data={sandboxData.environmentCard} />
