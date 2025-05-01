@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { toast } from "sonner";
 import {
     AlertCircle,
     BanIcon,
+    CheckIcon,
     PlusIcon,
     SearchIcon,
     X,
-    CheckIcon,
 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -107,7 +107,6 @@ export function ApiKeyList({ projectId }: ApiKeyListProps) {
 
     // Contexts
     const { getProjectApiKeys, refreshApiKeys, isLoading } = useApiKeys();
-    const { currentProject } = useProject();
 
     // Filter API keys based on search query and filters
     const filteredKeys = useMemo(() => {
@@ -496,58 +495,6 @@ function PermissionCheckboxes({
                     disabled={disabled}
                 />
                 <Label htmlFor={inline ? "inline-delete" : "delete"}>Delete Access</Label>
-            </div>
-        </div>
-    );
-}
-
-// Generated Key Display Component
-function GeneratedKeyDisplay({
-    generatedKey,
-    keyWasCopied,
-    onCopy,
-    onComplete
-}: {
-    generatedKey: string;
-    keyWasCopied: boolean;
-    onCopy: () => void;
-    onComplete: () => void;
-}) {
-    return (
-        <div className="space-y-4">
-            <div className="flex items-start space-x-2 p-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-md">
-                <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <p className="text-sm">
-                    Your API key has been created. Please copy it now. For security reasons, it won&apos;t be shown again.
-                </p>
-            </div>
-
-            <div className="p-3 bg-muted rounded-md break-all font-mono text-sm select-all">
-                {generatedKey}
-            </div>
-
-            <div className="flex flex-col space-y-2">
-                <Button
-                    variant={keyWasCopied ? "outline" : "default"}
-                    onClick={onCopy}
-                    className={`w-full ${keyWasCopied ? "" : "border-green-500 bg-green-50 text-green-700 hover:bg-green-100"}`}
-                >
-                    {keyWasCopied ? "Copied! Click to copy again" : "Copy to Clipboard"}
-                </Button>
-
-                <Button
-                    onClick={onComplete}
-                    className="w-full"
-                    disabled={!keyWasCopied}
-                >
-                    Let&apos;s Go
-                </Button>
-
-                {!keyWasCopied && (
-                    <p className="text-xs text-center text-muted-foreground mt-2">
-                        You must copy the API key before continuing
-                    </p>
-                )}
             </div>
         </div>
     );

@@ -1,15 +1,15 @@
 "use client";
 
+import { useAuth } from "@/components/auth/auth-context";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { ProjectDialog } from "@/components/projects/ProjectDialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects, type Project, type ProjectFormData } from "@/hooks/projects/use-projects";
-import { PlusCircle, RefreshCw, LayoutDashboard, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut, PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "@/components/auth/auth-context";
 
 export default function ProjectsPage() {
   const router = useRouter();

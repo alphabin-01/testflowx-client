@@ -1,14 +1,9 @@
 "use client"
 
 import {
-    IconBolt,
     IconChartLine,
-    IconFlask,
     IconHistory,
     IconHome,
-    IconList,
-    IconMoodSad,
-    IconSettings,
     IconX
 } from "@tabler/icons-react"
 
@@ -80,12 +75,11 @@ export function AppSidebar({
             collapsible={collapsible}
             className={`border-r bg-background relative p-0`}
         >
-            <SidebarHeader className="flex h-14 flex-row items-center border-b bg-gradient-to-r from-primary/10 to-background p-2">
+            <SidebarHeader className="flex h-14 flex-row items-center border-b bg-gradient-to-r from-primary/10 to-background p-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shadow-sm transition-colors hover:bg-primary/20">
-                        <IconHome className="h-5 w-5 text-primary" />
-                    </div>
-                    <Link href="/" className="text-base font-semibold">TestReport</Link>
+                    <Link href={'/'} className="text-md font-semibold">
+                        TestReport
+                    </Link>
                 </div>
                 <Button
                     variant="ghost"

@@ -1,22 +1,32 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, Code, Filter, Lightbulb, Sparkles, TrendingUp, Zap, Bug, Layout, Clock, AlertTriangle, Info, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Loader } from "@/components/ui/loader";
 import { Progress } from "@/components/ui/progress";
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
-    Legend, PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line
-} from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AlertCircle, AlertTriangle, Bug, CheckCircle2, Clock, Code, ExternalLink, Filter, Info, Layout, Sparkles, TrendingUp, XCircle, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Legend,
+    Line,
+    LineChart,
+    Pie,
+    PieChart,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer,
+    XAxis, YAxis
+} from 'recharts';
 
 // Types for test insights remain the same
 interface InsightCard {
@@ -785,7 +795,7 @@ const RankingSystemSection = ({ ranking }: { ranking: RankingSystem }) => {
                                             radius={[0, 4, 4, 0]}
                                             label={{
                                                 position: 'right',
-                                                formatter: (value) => `${value.toFixed(0)}%`,
+                                                formatter: (value: number) => `${value.toFixed(0)}%`,
                                                 fill: '#1e3a8a',
                                                 fontSize: 12
                                             }}
@@ -817,7 +827,7 @@ const RankingSystemSection = ({ ranking }: { ranking: RankingSystem }) => {
                                             radius={[4, 4, 0, 0]}
                                             label={{
                                                 position: 'top',
-                                                formatter: (value) => `${value.toFixed(0)}%`,
+                                                formatter: (value: number) => `${value.toFixed(0)}%`,
                                                 fill: '#6b21a8',
                                                 fontSize: 12
                                             }}
@@ -1024,7 +1034,7 @@ export function TestInsightsDashboard({ projectId = "project-123" }) {
         return (
             <div className="flex justify-center items-center min-h-[400px]">
                 <div className="text-center">
-                    <Loader className="mx-auto" />
+                    <Loader />
                     <span className="mt-4 block text-gray-600">Loading test insights...</span>
                 </div>
             </div>

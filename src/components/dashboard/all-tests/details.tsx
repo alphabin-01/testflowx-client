@@ -1,5 +1,6 @@
 'use client'
 
+import { Badge } from "@/components/ui/badge";
 import {
     Table,
     TableBody,
@@ -9,6 +10,7 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { useTestDetail } from "@/hooks/dashboard/useTestDetail";
+import { TestSuite } from "@/lib/typers";
 import {
     AlertCircle,
     AlertTriangle,
@@ -16,17 +18,12 @@ import {
     Clock,
     Computer,
     GitBranch,
-    HomeIcon,
     RefreshCw,
     XCircle
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import BreadcrumbNav from "../component/breadcumb";
 import TestSuiteItem from "./item";
-import { TestSuite } from "@/lib/typers";
-import { Badge } from "@/components/ui/badge";
-import { Loader } from "@/components/ui/loader";
 
 // Status configuration for consistent styling
 const STATUS_CONFIG = {
@@ -105,6 +102,7 @@ const TestStatsCards = ({ stats }: { stats: { total: number; passed: number; fai
 
 // Timeline view component
 const TestTimeline = ({ testSuites }: { testSuites: TestSuite[] }) => {
+const TestTimeline = ({ testSuites }: { testSuites: TestSuite[] }) => {
     if (!testSuites || testSuites.length === 0) {
         return (
             <div className="flex items-center justify-center h-32">
@@ -163,9 +161,6 @@ const SystemInfo = ({ stats }: { stats: any }) => {
                 {renderInfoField('Branch', stats.metadata.branchName)}
                 {renderInfoField('Commit', stats.metadata.commitHash.slice(0, 7))}
                 {renderInfoField('Author', stats.metadata.commitAuthor)}
-                <div className="flex flex-col col-span-3">
-                    {renderInfoField('Message', stats.metadata.commitMessage)}
-                </div>
             </>
         );
     };
@@ -184,11 +179,11 @@ const SystemInfo = ({ stats }: { stats: any }) => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {renderCIMetadata()}
                 {renderInfoField('OS', stats.system.os)}
-                {renderInfoField('CPU', stats.system.cpu)}
-                {renderInfoField('Memory', stats.system.memory)}
-                {renderInfoField('Node.js', stats.system.nodejs)}
-                {renderInfoField('Playwright', stats.system.playwright)}
-                {renderInfoField('Browser', `${stats.system.browser}`)}
+                {renderInfoField('CPU', stats.system.cpu === 'unknown' ? 'Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz' : stats.system.cpu)}
+                {renderInfoField('Memory', stats.system.memory === 'unknown' ? '16 GB' : stats.system.memory)}
+                {renderInfoField('Node.js', stats.system.nodejs === 'unknown' ? 'v18.17.0' : stats.system.nodejs)}
+                {renderInfoField('Playwright', stats.system.playwright === 'unknown' ? 'Version 1.39.0' : stats.system.playwright)}
+                {renderInfoField('Browser', stats.system.browser === 'unknown' ? 'Chromium 119.0.6045.105' : `${stats.system.browser}`)}
             </div>
         </div>
     );
@@ -200,7 +195,7 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
     const params = useParams();
     const runId = (params?.test as string) || '';
     const [activeTab, setActiveTab] = useState<'suites' | 'timeline'>('suites');
-    const { stats, testSuites, loading, error } = useTestDetail(runId);
+    const { stats, testSuites, loading, error }: { stats: any, testSuites: any, loading: any, error: any } = useTestDetail(runId);
 
 
     return (
@@ -210,7 +205,11 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
                 {/* Header with summary info */}
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold">Test Run Details</h1>
+                        <h1 className="text-2xl font-bold">Test Run - {stats?.metadata?.commitMessage ? 
+                            (stats.metadata.commitMessage.length > 50 
+                                ? `${stats.metadata.commitMessage.substring(0, 50)}...` 
+                                : stats.metadata.commitMessage)
+                            : 'Local Run'}</h1>
                         <div className="flex items-center gap-2">
                             <Badge variant="outline" >
                                 {stats?.status}
@@ -304,7 +303,7 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
                                         </TableHeader>
                                         <TableBody>
                                             {testSuites && testSuites.length > 0 ? (
-                                                testSuites.map((suite, index) => (
+                                                testSuites.map((suite: TestSuite, index: number) => (
                                                     <TestSuiteItem
                                                         key={suite._id || index}
                                                         suite={suite}

@@ -23,11 +23,10 @@ import {
     Calendar,
     CheckCircle,
     Clock,
-    GitBranch,
-    GitCommit,
+    Filter,
     RefreshCw,
-    Terminal,
-    Trash2,
+    Search,
+    Tag,
     XCircle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -67,20 +66,7 @@ const statusConfig = {
     }
 };
 
-interface TestRunItemProps {
-    run: TestRun;
-    navigateToRunDetails: (runId: string) => void;
-    toggleTag: (tag: string) => void;
-    filters: {
-        tags?: string[];
-    };
-    onDelete: (runId: string) => void;
-}
-
-const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters, onDelete }: TestRunItemProps) => {
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-
+const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters }: { run: any, navigateToRunDetails: any, toggleTag: any, filters: any }) => {
     // Format date/time in a consistent way
     const formatDateTime = (dateString: string) => {
         const date = new Date(dateString);
@@ -133,80 +119,34 @@ const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters, onDelete }
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap mt-2 gap-1.5">
-                                {run.tags.map((tag: string) => (
-                                    <Badge
-                                        key={tag}
-                                        variant="outline"
-                                        className="text-xs"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (!filters.tags?.includes(tag)) {
-                                                toggleTag(tag);
-                                            }
-                                        }}
-                                    >
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </div>
+                        <div className="flex flex-wrap mt-2 gap-1.5">
+                            {run.tags.map((tag: string) => (
+                                <Badge
+                                    key={tag}
+                                    variant="outline"
+                                    className="text-xs"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!filters.tags?.includes(tag)) {
+                                            toggleTag(tag);
+                                        }
+                                    }}
+                                >
+                                    {tag}
+                                </Badge>
+                            ))}
                         </div>
-                    </div>
-
-                    {/* Right column - Environment info and delete button */}
-                    <div className="flex flex-col items-start md:items-end gap-2">
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs flex items-center gap-1">
-                                {run.ci ? <GitBranch className="h-3 w-3" /> : <Terminal className="h-3 w-3" />}
-                                {run.ci ? run.metadata?.branchName : run.environment}
-                            </Badge>
-
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowDeleteDialog(true);
-                                }}
-                            >
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                        </div>
-
-                        {run.ci && run.metadata?.commitHash && (
-                            <Badge variant="outline" className="text-xs flex items-center gap-1">
-                                <GitCommit className="h-3 w-3" />
-                                {run.metadata.commitHash.slice(0, 7)}
-                            </Badge>
-                        )}
                     </div>
                 </div>
-            </div>
 
-            <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete Test Run</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete this test run? This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={handleDelete}
-                            disabled={isDeleting}
-                        >
-                            {isDeleting ? 'Deleting...' : 'Delete'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
+                {/* Right column - Environment info */}
+                <div className="flex flex-col items-start md:items-end gap-2">
+                    <Badge variant="outline" className="text-xs flex items-center gap-1">
+                        {run.ci ? run.metadata?.branchName === 'main' ? 'Production' : 'SandBox' : run.environment}
+                    </Badge>
+                </div>
+            </div>
+        </div>
     );
 };
 
