@@ -20,7 +20,7 @@ const API_URLS = {
     [ENV.PROD]: process.env.NEXT_PUBLIC_PROD_API_URL || 'https://api.example.com/api'
 };
 
-const getBaseUrl = () => API_URLS[CURRENT_ENV];
+const getBaseUrl = () => `${API_URLS[CURRENT_ENV]}/api`;
 
 const getApiUrl = (endpoint: string) => {
     const baseUrl = getBaseUrl();
