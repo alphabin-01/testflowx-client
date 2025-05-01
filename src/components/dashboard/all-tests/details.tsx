@@ -59,7 +59,7 @@ const formatDuration = (ms: number): string => {
 
 
 // Component to render the stats cards
-const TestStatsCards = ({ stats }: { stats: { total: number; passed: number; failed: number; flaky: number; skipped: number; } }) => {
+const TestStatsCards = ({ stats }: { stats: any }) => {
     if (!stats) return null;
 
     return (
@@ -101,7 +101,6 @@ const TestStatsCards = ({ stats }: { stats: { total: number; passed: number; fai
 };
 
 // Timeline view component
-const TestTimeline = ({ testSuites }: { testSuites: TestSuite[] }) => {
 const TestTimeline = ({ testSuites }: { testSuites: TestSuite[] }) => {
     if (!testSuites || testSuites.length === 0) {
         return (
