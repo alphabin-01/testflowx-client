@@ -17,6 +17,7 @@ import {
 import { useSidebarState } from "@/lib/sidebar-state"
 import { KeyIcon } from "lucide-react"
 import { useParams } from "next/navigation"
+import Link from "next/link"
 
 export function AppSidebar({
     variant = "inset",
@@ -76,9 +77,9 @@ export function AppSidebar({
         >
             <SidebarHeader className="flex h-14 flex-row items-center border-b bg-gradient-to-r from-primary/10 to-background p-4">
                 <div className="flex items-center gap-3">
-                    <span className="text-md font-semibold">
+                    <Link href={'/'} className="text-md font-semibold">
                         TestReport
-                    </span>
+                    </Link>
                 </div>
                 <Button
                     variant="ghost"

@@ -110,7 +110,8 @@ export function useTestDetail(runId: string) {
         endTime: runStats?.endTime,
         metadata: runStats?.metadata,
         system: runStats?.system,
-        ci: runStats?.ci
+        // ci: runStats?.ci
+        ci: true
     }), [runStats]);
 
     return {

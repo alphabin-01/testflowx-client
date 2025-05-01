@@ -143,7 +143,6 @@ const TestSuiteItem = ({ suite }: TestSuiteItemProps) => {
             return (
                 <div className="py-4 text-center text-muted-foreground">
                     <Loader />
-                    Loading test cases...
                 </div>
             );
         }

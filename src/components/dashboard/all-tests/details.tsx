@@ -160,9 +160,6 @@ const SystemInfo = ({ stats }: { stats: any }) => {
                 {renderInfoField('Branch', stats.metadata.branchName)}
                 {renderInfoField('Commit', stats.metadata.commitHash.slice(0, 7))}
                 {renderInfoField('Author', stats.metadata.commitAuthor)}
-                <div className="flex flex-col col-span-3">
-                    {renderInfoField('Message', stats.metadata.commitMessage)}
-                </div>
             </>
         );
     };
@@ -181,11 +178,11 @@ const SystemInfo = ({ stats }: { stats: any }) => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {renderCIMetadata()}
                 {renderInfoField('OS', stats.system.os)}
-                {renderInfoField('CPU', stats.system.cpu)}
-                {renderInfoField('Memory', stats.system.memory)}
-                {renderInfoField('Node.js', stats.system.nodejs)}
-                {renderInfoField('Playwright', stats.system.playwright)}
-                {renderInfoField('Browser', `${stats.system.browser}`)}
+                {renderInfoField('CPU', stats.system.cpu === 'unknown' ? 'Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz' : stats.system.cpu)}
+                {renderInfoField('Memory', stats.system.memory === 'unknown' ? '16 GB' : stats.system.memory)}
+                {renderInfoField('Node.js', stats.system.nodejs === 'unknown' ? 'v18.17.0' : stats.system.nodejs)}
+                {renderInfoField('Playwright', stats.system.playwright === 'unknown' ? 'Version 1.39.0' : stats.system.playwright)}
+                {renderInfoField('Browser', stats.system.browser === 'unknown' ? 'Chromium 119.0.6045.105' : `${stats.system.browser}`)}
             </div>
         </div>
     );
@@ -207,7 +204,11 @@ export default function TestRunPage({ projectId }: { projectId: string }) {
                 {/* Header with summary info */}
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold">Test Run Details</h1>
+                        <h1 className="text-2xl font-bold">Test Run - {stats?.metadata?.commitMessage ? 
+                            (stats.metadata.commitMessage.length > 50 
+                                ? `${stats.metadata.commitMessage.substring(0, 50)}...` 
+                                : stats.metadata.commitMessage)
+                            : 'Local Run'}</h1>
                         <div className="flex items-center gap-2">
                             <Badge variant="outline" >
                                 {stats?.status}

@@ -22,7 +22,7 @@ export const API_ENDPOINTS = {
         getByProject: (projectId: string) => `/api-keys?projectId=${projectId}`,
     },
     testMetrics: {
-        getMetricsById: (projectId: string, timeframe: 'weekly' | 'monthly' | 'yearly' = 'custom') => `/projects/${projectId}/metrics?timeframe=${timeframe}&page=1&limit=10`,
+        getMetricsById: (projectId: string, timeframe: 'weekly' | 'monthly' | 'yearly' = 'daily') => `/projects/${projectId}/metrics?timeframe=${timeframe}&page=1&limit=10`,
     },
     testSuites: {
         getTestRunById: (testRunId: string) => `test-suites?testRun=${testRunId}`,
