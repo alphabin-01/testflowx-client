@@ -29,12 +29,9 @@ import {
     CheckCircle,
     Clock,
     Filter,
-    GitBranch,
-    GitCommit,
     RefreshCw,
     Search,
     Tag,
-    Terminal,
     XCircle
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -73,9 +70,9 @@ const statusConfig = {
     }
 };
 
-const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters }) => {
+const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters }: { run: any, navigateToRunDetails: any, toggleTag: any, filters: any }) => {
     // Format date/time in a consistent way
-    const formatDateTime = (dateString) => {
+    const formatDateTime = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleString();
     };
@@ -112,7 +109,7 @@ const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters }) => {
                         </div>
 
                         <div className="flex flex-wrap mt-2 gap-1.5">
-                            {run.tags.map((tag) => (
+                            {run.tags.map((tag: string) => (
                                 <Badge
                                     key={tag}
                                     variant="outline"
@@ -134,16 +131,8 @@ const TestRunItem = ({ run, navigateToRunDetails, toggleTag, filters }) => {
                 {/* Right column - Environment info */}
                 <div className="flex flex-col items-start md:items-end gap-2">
                     <Badge variant="outline" className="text-xs flex items-center gap-1">
-                        {run.ci ? <GitBranch className="h-3 w-3" /> : <Terminal className="h-3 w-3" />}
-                        {run.ci ? run.metadata?.branchName : run.environment}
+                        {run.ci ? run.metadata?.branchName === 'main' ? 'Production' : 'SandBox' : run.environment}
                     </Badge>
-
-                    {run.ci && run.metadata?.commitHash && (
-                        <Badge variant="outline" className="text-xs flex items-center gap-1">
-                            <GitCommit className="h-3 w-3" />
-                            {run.metadata.commitHash.slice(0, 7)}
-                        </Badge>
-                    )}
                 </div>
             </div>
         </div>
